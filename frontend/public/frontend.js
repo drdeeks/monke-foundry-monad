@@ -56,6 +56,33 @@ const elements = {
     closeModal: document.getElementById('closeModal')
 };
 
+function createGameBoard() {
+    elements.gameBoard.innerHTML = '';
+    for (let i = 1; i <= config.totalNumbers; i++) {
+        const numberCard = document.createElement('div');
+        numberCard.className = 'number-card bg-gray-700 text-white flex items-center justify-center rounded cursor-pointer';
+        numberCard.textContent = i;
+        numberCard.dataset.number = i;
+        numberCard.addEventListener('click', () => toggleNumberSelection(i));
+        elements.gameBoard.appendChild(numberCard);
+    }
+}
+
+function toggleNumberSelection(number) {
+    const index = state.selectedNumbers.indexOf(number);
+    const maxSelectable = config.difficultySettings[state.difficulty].maxSelectable;
+    const card = document.querySelector(`.number-card[data-number="${number}"]`);
+    if (index === -1) {
+        if (state.selectedNumbers.length < maxSelectable) {
+            state.selectedNumbers.push(number);
+            card.classList.add('bg-yellow-500', 'text-black');
+        }
+    } else {
+        state.selectedNumbers.splice(index, 1);
+        card.classList.remove('bg-yellow-500', 'text-black');
+    }
+}
+
 async function connectWallet() {
     if (!window.ethereum) {
         showNotification("No Wallet Detected", "Please install MetaMask or another Web3 wallet to connect.");
@@ -160,6 +187,7 @@ function closeModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    createGameBoard();
     elements.connectWalletBtn.addEventListener('click', connectWallet);
     elements.closeModal.addEventListener('click', closeModal);
     elements.modalConfirmBtn.addEventListener('click', closeModal);
