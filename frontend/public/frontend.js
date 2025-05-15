@@ -3,7 +3,7 @@
 
 // Game Configuration
 const config = {
-    contractAddress: "0x1234567890123456789012345678901234567890", // Placeholder address
+    contractAddress: "0x56Df969bc8C91989FA5d6cBa7E9B91486e728080", // Placeholder address
     contractABI: [], // Placeholder ABI
     difficultySettings: {
         easy: { maxSelectable: 10, numbersToDraw: 20 },
@@ -39,56 +39,41 @@ const state = {
 };
 
 // DOM Elements
-const elements = {};
-
-// Initialize DOM elements after the document is loaded
-function initializeElements() {
-    elements.connectWalletBtn = document.getElementById('connectWalletBtn');
-    elements.walletInfo = document.getElementById('walletInfo');
-    elements.contractAddress = document.getElementById('contractAddress');
-    elements.contractBalance = document.getElementById('contractBalance');
-    elements.wagerAmount = document.getElementById('wagerAmount');
-    elements.difficultyBtns = document.querySelectorAll('.difficulty-btn');
-    elements.easyBtn = document.getElementById('easyBtn');
-    elements.mediumBtn = document.getElementById('mediumBtn');
-    elements.hardBtn = document.getElementById('hardBtn');
-    elements.multiplierDisplay = document.getElementById('multiplierDisplay');
-    elements.maxSelectable = document.getElementById('maxSelectable');
-    elements.numbersToDraw = document.getElementById('numbersToDraw');
-    elements.selectionCount = document.getElementById('selectionCount');
-    elements.maxSelectionCount = document.getElementById('maxSelectionCount');
-    elements.gameBoard = document.getElementById('gameBoard');
-    elements.clearBtn = document.getElementById('clearBtn');
-    elements.randomBtn = document.getElementById('randomBtn');
-    elements.playBtn = document.getElementById('playBtn');
-    elements.resultsSection = document.getElementById('resultsSection');
-    elements.matchesValue = document.getElementById('matchesValue');
-    elements.payoutValue = document.getElementById('payoutValue');
-    elements.multiplierValue = document.getElementById('multiplierValue');
-    elements.winningAnimation = document.getElementById('winningAnimation');
-    elements.playAgainBtn = document.getElementById('playAgainBtn');
-    elements.pixelMonkey = document.getElementById('pixelMonkey');
-    elements.txStatus = document.getElementById('txStatus');
-    elements.networkInfo = document.getElementById('networkInfo');
-    elements.networkIndicator = document.getElementById('networkIndicator');
-    elements.notificationModal = document.getElementById('notificationModal');
-    elements.modalTitle = document.getElementById('modalTitle');
-    elements.modalBody = document.getElementById('modalBody');
-    elements.modalConfirmBtn = document.getElementById('modalConfirmBtn');
-    elements.closeModal = document.getElementById('closeModal');
-    
-    // Fix for the game title - Update the title in the HTML
-    const titleElement = document.getElementById('gameTitle');
-    if (titleElement) {
-        titleElement.textContent = "MonKe";
-    }
-    
-    // Remove unwanted "Download Project Files" button if it exists
-    const downloadBtn = document.getElementById('downloadProjectBtn');
-    if (downloadBtn) {
-        downloadBtn.remove();
-    }
-}
+const elements = {
+    connectWalletBtn: document.getElementById('connectWalletBtn'),
+    walletInfo: document.getElementById('walletInfo'),
+    contractAddress: document.getElementById('contractAddress'),
+    contractBalance: document.getElementById('contractBalance'),
+    wagerAmount: document.getElementById('wagerAmount'),
+    difficultyBtns: document.querySelectorAll('.difficulty-btn'),
+    easyBtn: document.getElementById('easyBtn'),
+    mediumBtn: document.getElementById('mediumBtn'),
+    hardBtn: document.getElementById('hardBtn'),
+    multiplierDisplay: document.getElementById('multiplierDisplay'),
+    maxSelectable: document.getElementById('maxSelectable'),
+    numbersToDraw: document.getElementById('numbersToDraw'),
+    selectionCount: document.getElementById('selectionCount'),
+    maxSelectionCount: document.getElementById('maxSelectionCount'),
+    gameBoard: document.getElementById('gameBoard'),
+    clearBtn: document.getElementById('clearBtn'),
+    randomBtn: document.getElementById('randomBtn'),
+    playBtn: document.getElementById('playBtn'),
+    resultsSection: document.getElementById('resultsSection'),
+    matchesValue: document.getElementById('matchesValue'),
+    payoutValue: document.getElementById('payoutValue'),
+    multiplierValue: document.getElementById('multiplierValue'),
+    winningAnimation: document.getElementById('winningAnimation'),
+    playAgainBtn: document.getElementById('playAgainBtn'),
+    pixelMonkey: document.getElementById('pixelMonkey'),
+    txStatus: document.getElementById('txStatus'),
+    networkInfo: document.getElementById('networkInfo'),
+    networkIndicator: document.getElementById('networkIndicator'),
+    notificationModal: document.getElementById('notificationModal'),
+    modalTitle: document.getElementById('modalTitle'),
+    modalBody: document.getElementById('modalBody'),
+    modalConfirmBtn: document.getElementById('modalConfirmBtn'),
+    closeModal: document.getElementById('closeModal')
+};
 
 // Connect wallet
 async function connectWallet() {
@@ -106,7 +91,7 @@ async function connectWallet() {
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
         state.networkId = parseInt(chainId, 16);
         
-        // Initialize ethers provider - Modified to use ethers v6 correctly
+        // Initialize ethers provider
         state.provider = new ethers.BrowserProvider(window.ethereum);
         state.signer = await state.provider.getSigner();
         
@@ -134,38 +119,23 @@ function disconnectWallet() {
     state.contract = null;
     
     // Update UI
-    if (elements.connectWalletBtn) {
-        elements.connectWalletBtn.textContent = "Connect Wallet";
-    }
+    elements.connectWalletBtn.textContent = "Connect Wallet";
+    elements.walletInfo.innerHTML = `
+        <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+        <div id="networkInfo" style="display: none;">
+            <span class="network-indicator" id="networkIndicator">Network</span>
+        </div>
+    `;
     
-    if (elements.walletInfo) {
-        elements.walletInfo.innerHTML = `
-            <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
-            <div id="networkInfo" style="display: none;">
-                <span class="network-indicator" id="networkIndicator">Network</span>
-            </div>
-        `;
-        
-        // Re-add event listener
-        const newConnectBtn = document.getElementById('connectWalletBtn');
-        if (newConnectBtn) {
-            newConnectBtn.addEventListener('click', connectWallet);
-        }
-    }
+    // Re-add event listener
+    document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
     
     // Update contract info
-    if (elements.contractAddress) {
-        elements.contractAddress.textContent = "Not connected";
-    }
-    
-    if (elements.contractBalance) {
-        elements.contractBalance.textContent = "N/A";
-    }
+    elements.contractAddress.textContent = "Not connected";
+    elements.contractBalance.textContent = "N/A";
     
     // Disable play button
-    if (elements.playBtn) {
-        elements.playBtn.disabled = true;
-    }
+    elements.playBtn.disabled = true;
 }
 
 // Initialize contract
@@ -181,9 +151,7 @@ async function initializeContract() {
         );
         
         // Update contract info in UI
-        if (elements.contractAddress) {
-            elements.contractAddress.textContent = config.contractAddress;
-        }
+        elements.contractAddress.textContent = config.contractAddress;
         
         // Get contract balance
         await updateContractBalance();
@@ -202,23 +170,17 @@ async function updateContractBalance() {
     
     try {
         const balance = await state.provider.getBalance(config.contractAddress);
-        if (elements.contractBalance) {
-            elements.contractBalance.textContent = ethers.formatEther(balance);
-        }
+        elements.contractBalance.textContent = ethers.formatEther(balance);
     } catch (error) {
         console.error("Error getting contract balance:", error);
-        if (elements.contractBalance) {
-            elements.contractBalance.textContent = "Error";
-        }
+        elements.contractBalance.textContent = "Error";
     }
 }
 
 // Update wallet UI
 function updateWalletUI() {
-    if (!state.connected || !state.account || !elements.walletInfo) {
-        if (elements.connectWalletBtn) {
-            elements.connectWalletBtn.textContent = "Connect Wallet";
-        }
+    if (!state.connected || !state.account) {
+        elements.connectWalletBtn.textContent = "Connect Wallet";
         return;
     }
     
@@ -236,10 +198,6 @@ function updateWalletUI() {
     
     // Get and display wallet balance
     updateWalletBalance();
-    
-    // Re-initialize network indicator element
-    elements.networkIndicator = document.getElementById('networkIndicator');
-    elements.networkInfo = document.getElementById('networkInfo');
 }
 
 // Update wallet balance
@@ -263,8 +221,8 @@ async function updateWalletBalance() {
 
 // Update network UI
 function updateNetworkUI() {
-    const networkInfoElement = elements.networkInfo;
-    const networkIndicatorElement = elements.networkIndicator;
+    const networkInfoElement = document.getElementById('networkInfo');
+    const networkIndicatorElement = document.getElementById('networkIndicator');
     
     if (!networkInfoElement || !networkIndicatorElement) return;
     
@@ -281,11 +239,6 @@ function updateNetworkUI() {
 // Create the game board
 function createGameBoard() {
     // Clear existing board
-    if (!elements.gameBoard) {
-        console.error("Game board element not found");
-        return;
-    }
-    
     elements.gameBoard.innerHTML = '';
     
     // Create 60 number cards (1-60)
@@ -300,9 +253,6 @@ function createGameBoard() {
         
         elements.gameBoard.appendChild(numberCard);
     }
-    
-    // Make sure the game board is visible
-    elements.gameBoard.style.display = 'grid';
 }
 
 // Toggle number selection
@@ -343,8 +293,6 @@ function toggleNumberSelection(number) {
 
 // Update selection count display
 function updateSelectionCount() {
-    if (!elements.selectionCount || !elements.maxSelectionCount) return;
-    
     const maxSelectable = config.difficultySettings[state.difficulty].maxSelectable;
     elements.selectionCount.textContent = state.selectedNumbers.length;
     elements.maxSelectionCount.textContent = maxSelectable;
@@ -358,14 +306,12 @@ function setDifficulty(level) {
     state.difficulty = level;
     
     // Update UI
-    if (elements.difficultyBtns) {
-        elements.difficultyBtns.forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.level === level) {
-                btn.classList.add('active');
-            }
-        });
-    }
+    elements.difficultyBtns.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.level === level) {
+            btn.classList.add('active');
+        }
+    });
     
     // Clear current selection
     clearSelection();
@@ -377,18 +323,9 @@ function setDifficulty(level) {
 // Update UI elements related to difficulty
 function updateDifficultyUI() {
     const settings = config.difficultySettings[state.difficulty];
-    
-    if (elements.maxSelectable) {
-        elements.maxSelectable.textContent = settings.maxSelectable;
-    }
-    
-    if (elements.numbersToDraw) {
-        elements.numbersToDraw.textContent = settings.numbersToDraw;
-    }
-    
-    if (elements.maxSelectionCount) {
-        elements.maxSelectionCount.textContent = settings.maxSelectable;
-    }
+    elements.maxSelectable.textContent = settings.maxSelectable;
+    elements.numbersToDraw.textContent = settings.numbersToDraw;
+    elements.maxSelectionCount.textContent = settings.maxSelectable;
 }
 
 // Clear selection
@@ -441,8 +378,6 @@ function selectRandom() {
 
 // Update multiplier based on selections
 function updateMultiplier() {
-    if (!elements.multiplierDisplay || !elements.wagerAmount) return;
-    
     const numSelected = state.selectedNumbers.length;
     state.wagerAmount = parseFloat(elements.wagerAmount.value) || 0;
     
@@ -488,8 +423,6 @@ function updateMultiplier() {
 
 // Update play button state
 function updatePlayButtonState() {
-    if (!elements.playBtn) return;
-    
     const canPlay = 
         state.connected && 
         state.selectedNumbers.length > 0 && 
@@ -504,10 +437,7 @@ async function playGame() {
     if (!validateGameSettings()) return;
     
     state.gameInProgress = true;
-    
-    if (elements.playBtn) {
-        elements.playBtn.disabled = true;
-    }
+    elements.playBtn.disabled = true;
     
     // Update UI to show transaction in progress
     showTxStatus('pending', 'Transaction pending...');
@@ -548,9 +478,7 @@ async function playGame() {
         
         // Reset game state
         state.gameInProgress = false;
-        if (elements.playBtn) {
-            elements.playBtn.disabled = false;
-        }
+        elements.playBtn.disabled = false;
         
         // Show notification
         showNotification(
@@ -642,31 +570,19 @@ function showGameResults() {
     });
     
     // Update results section
-    if (elements.matchesValue) {
-        elements.matchesValue.textContent = state.matchedNumbers.length;
-    }
-    
-    if (elements.payoutValue) {
-        elements.payoutValue.textContent = state.payout.toFixed(4);
-    }
-    
-    if (elements.multiplierValue) {
-        elements.multiplierValue.textContent = `${state.multiplier}x`;
-    }
+    elements.matchesValue.textContent = state.matchedNumbers.length;
+    elements.payoutValue.textContent = state.payout.toFixed(4);
+    elements.multiplierValue.textContent = `${state.multiplier}x`;
     
     // Show winning animation if there's a payout
-    if (elements.winningAnimation) {
-        if (state.payout > 0) {
-            elements.winningAnimation.textContent = "🎉 You Won! 🎉";
-        } else {
-            elements.winningAnimation.textContent = "Better luck next time!";
-        }
+    if (state.payout > 0) {
+        elements.winningAnimation.textContent = "🎉 You Won! 🎉";
+    } else {
+        elements.winningAnimation.textContent = "Better luck next time!";
     }
     
     // Show results section
-    if (elements.resultsSection) {
-        elements.resultsSection.style.display = 'block';
-    }
+    elements.resultsSection.style.display = 'block';
     
     // Update contract and wallet balances
     updateContractBalance();
@@ -676,9 +592,7 @@ function showGameResults() {
 // Reset game for a new round
 function resetGame() {
     // Hide results section
-    if (elements.resultsSection) {
-        elements.resultsSection.style.display = 'none';
-    }
+    elements.resultsSection.style.display = 'none';
     
     // Reset game state
     state.gameInProgress = false;
@@ -697,8 +611,6 @@ function resetGame() {
 
 // Show transaction status
 function showTxStatus(type, message) {
-    if (!elements.txStatus) return;
-    
     elements.txStatus.className = 'tx-status';
     elements.txStatus.classList.add(`tx-${type}`);
     elements.txStatus.textContent = message;
@@ -707,8 +619,6 @@ function showTxStatus(type, message) {
 
 // Show notification modal
 function showNotification(title, message) {
-    if (!elements.notificationModal || !elements.modalTitle || !elements.modalBody) return;
-    
     elements.modalTitle.textContent = title;
     elements.modalBody.textContent = message;
     elements.notificationModal.style.display = 'flex';
@@ -716,15 +626,11 @@ function showNotification(title, message) {
 
 // Close notification modal
 function closeModal() {
-    if (elements.notificationModal) {
-        elements.notificationModal.style.display = 'none';
-    }
+    elements.notificationModal.style.display = 'none';
 }
 
 // Easter egg - floating pixel monkey
 function triggerEasterEgg() {
-    if (!elements.pixelMonkey) return;
-    
     const pixelMonkey = elements.pixelMonkey;
     const maxX = window.innerWidth - 20;
     const maxY = window.innerHeight - 20;
@@ -743,13 +649,11 @@ function triggerEasterEgg() {
 }
 
 // Initialize the game when the document is ready
+generateBoard();
 document.addEventListener('DOMContentLoaded', initialize);
 
 // Initialize the game
 async function initialize() {
-    // Initialize DOM elements
-    initializeElements();
-    
     // Set up the game board
     createGameBoard();
     
@@ -784,65 +688,31 @@ async function initialize() {
 // Setup event listeners
 function setupEventListeners() {
     // Wallet connection
-    if (elements.connectWalletBtn) {
-        elements.connectWalletBtn.addEventListener('click', connectWallet);
-    }
+    elements.connectWalletBtn.addEventListener('click', connectWallet);
     
     // Difficulty buttons
-    if (elements.easyBtn) {
-        elements.easyBtn.addEventListener('click', () => setDifficulty('easy'));
-    }
-    
-    if (elements.mediumBtn) {
-        elements.mediumBtn.addEventListener('click', () => setDifficulty('medium'));
-    }
-    
-    if (elements.hardBtn) {
-        elements.hardBtn.addEventListener('click', () => setDifficulty('hard'));
-    }
+    elements.easyBtn.addEventListener('click', () => setDifficulty('easy'));
+    elements.mediumBtn.addEventListener('click', () => setDifficulty('medium'));
+    elements.hardBtn.addEventListener('click', () => setDifficulty('hard'));
     
     // Wager amount input
-    if (elements.wagerAmount) {
-        elements.wagerAmount.addEventListener('input', updateMultiplier);
-    }
+    elements.wagerAmount.addEventListener('input', updateMultiplier);
     
     // Game action buttons
-    if (elements.clearBtn) {
-        elements.clearBtn.addEventListener('click', clearSelection);
-    }
-    
-    if (elements.randomBtn) {
-        elements.randomBtn.addEventListener('click', selectRandom);
-    }
-    
-    if (elements.playBtn) {
-        elements.playBtn.addEventListener('click', playGame);
-    }
-    
-    if (elements.playAgainBtn) {
-        elements.playAgainBtn.addEventListener('click', resetGame);
-    }
+    elements.clearBtn.addEventListener('click', clearSelection);
+    elements.randomBtn.addEventListener('click', selectRandom);
+    elements.playBtn.addEventListener('click', playGame);
+    elements.playAgainBtn.addEventListener('click', resetGame);
     
     // Easter egg
-    const monkeyLogo = document.getElementById('monkeyLogo');
-    if (monkeyLogo) {
-        monkeyLogo.addEventListener('click', triggerEasterEgg);
-    }
-    
-    if (elements.pixelMonkey) {
-        elements.pixelMonkey.addEventListener('click', () => {
-            elements.pixelMonkey.classList.remove('visible');
-        });
-    }
+    document.getElementById('monkeyLogo').addEventListener('click', triggerEasterEgg);
+    elements.pixelMonkey.addEventListener('click', () => {
+        elements.pixelMonkey.classList.remove('visible');
+    });
     
     // Modal buttons
-    if (elements.closeModal) {
-        elements.closeModal.addEventListener('click', closeModal);
-    }
-    
-    if (elements.modalConfirmBtn) {
-        elements.modalConfirmBtn.addEventListener('click', closeModal);
-    }
+    elements.closeModal.addEventListener('click', closeModal);
+    elements.modalConfirmBtn.addEventListener('click', closeModal);
 }
 
 // Setup provider event listeners
