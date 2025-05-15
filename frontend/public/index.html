@@ -1,27 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MonKe - Blockchain Lottery Game</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MonKe</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
 </head>
-<body>
-    <header>
-        <h1>MonKe</h1>
-    </header>
-    <main>
-        <!-- Game content will go here -->
-        <div id="walletInfo">
-            <button id="connectWalletBtn">Connect Wallet</button>
-            <div id="networkInfo" style="display: none;">
-                <span id="networkIndicator">Network</span>
-            </div>
+<body class="bg-gray-900 text-white font-sans">
+  <header class="p-6 bg-gray-800 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <div id="monkeyLogo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 20 20">
+          <rect x="5" y="5" width="10" height="10" fill="#F9A826" />
+          <rect x="7" y="7" width="2" height="2" fill="#000" />
+          <rect x="11" y="7" width="2" height="2" fill="#000" />
+          <rect x="8" y="11" width="4" height="2" fill="#000" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold">MonKe</h1>
+    </div>
+    <div id="walletInfo">
+      <button class="connect-wallet-btn bg-yellow-500 text-black px-4 py-2 rounded" id="connectWalletBtn">Connect Wallet</button>
+      <div id="networkInfo" style="display: none;">
+        <span class="network-indicator bg-green-400 text-green-900 px-2 py-1 rounded-full text-xs font-bold" id="networkIndicator">Network</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section class="bg-gray-800 p-4 rounded shadow col-span-1">
+        <h2 class="text-xl font-semibold mb-4">Contract Info</h2>
+        <p><strong>Address:</strong> <span id="contractAddress" class="font-mono text-sm">Not connected</span></p>
+        <p><strong>Balance:</strong> <span id="contractBalance">N/A</span> MONAD</p>
+      </section>
+
+      <section class="col-span-2">
+        <div class="mb-4">
+          <h2 class="text-xl font-semibold">Game</h2>
+          <div id="gameBoard" class="grid grid-cols-6 sm:grid-cols-10 gap-2 mt-2"></div>
         </div>
-        <!-- Game Board, Controls, etc. -->
-    </main>
-    <!-- Include ethers.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <script type="module" src="frontend.js"></script>
+        <div class="flex gap-2 mb-4">
+          <button id="clearBtn" class="bg-blue-600 px-4 py-2 rounded">Clear</button>
+          <button id="randomBtn" class="bg-blue-600 px-4 py-2 rounded">Random</button>
+          <button id="playBtn" class="bg-yellow-500 text-black px-6 py-2 rounded flex-grow" disabled>Play</button>
+        </div>
+
+        <div id="txStatus" class="hidden px-4 py-2 rounded text-sm font-semibold"></div>
+
+        <div id="resultsSection" class="hidden mt-6 bg-gray-800 p-4 rounded">
+          <h3 class="text-lg font-semibold mb-2">Game Results</h3>
+          <div id="winningAnimation" class="text-center py-4 font-bold text-yellow-400"></div>
+          <div class="grid grid-cols-3 text-center mb-4">
+            <div>
+              <p class="text-gray-400">Matches</p>
+              <p id="matchesValue" class="text-xl font-bold">0</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Multiplier</p>
+              <p id="multiplierValue" class="text-xl font-bold">0x</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Payout</p>
+              <p id="payoutValue" class="text-xl font-bold text-yellow-400">0</p>
+            </div>
+          </div>
+          <button id="playAgainBtn" class="bg-yellow-500 text-black px-4 py-2 rounded">Play Again</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-gray-800 p-6 rounded max-w-md w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modalTitle" class="text-lg font-bold">Notification</h3>
+        <button id="closeModal" class="text-gray-400 hover:text-white">&times;</button>
+      </div>
+      <div id="modalBody" class="mb-4">Message</div>
+      <div class="flex justify-end">
+        <button id="modalConfirmBtn" class="bg-yellow-500 text-black px-4 py-2 rounded">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pixelMonkey" class="hidden fixed w-12 h-12 z-50" style="background-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCI+PHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjRjlBODI2Ii8+PHJlY3QgeD0iNyIgeT0iNyIgd2lkdGg9IjIiIGhlaWdodD0iMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjExIiB5PSI3IiB3aWR0aD0iMiIgaGVpZ2h0PSIyIiBmaWxsPSIjMDAwIi8+PHJlY3QgeD0iOCIgeT0iMTEiIHdpZHRoPSI0IiBoZWlnaHQ9IjIiIGZpbGw9IiMwMDAiLz48L3N2Zz4='); background-size:cover;"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+  <script type="module" src="frontend.js"></script>
 </body>
 </html>
