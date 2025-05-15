@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonKe - Keno Game</title>
+    <link rel="stylesheet" href="styles.css">
+       :root {
+            --primary: #4e2e87;
+            --secondary: #8057d3;
+            --accent: #ffd700;
+            --background: #f8f5ff;
+            --light: #ffffff;
+            --dark: #333333;
+            --danger: #dc3545;
+            --success: #28a745;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .title {
+            display: flex;
+            align-items: center;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .monkey-logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .wallet-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .wallet-balance {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .wallet-address {
+            font-size: 0.8rem;
+            color: var(--dark);
+            opacity: 0.7;
+        }
+        
+        .connect-wallet-btn {
+            background-color: var(--secondary);
+            color: var(--light);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .connect-wallet-btn:hover {
+            background-color: var(--primary);
+        }
+        
+        .game-settings {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .setting-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .difficulty-level {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .difficulty-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background-color: #eee;
+        }
+        
+        .difficulty-btn.active {
+            background-color: var(--secondary);
+            color: var(--light);
+        }
+        
+        .game-board {
+            display: grid;
+            /* Horizontal layout with 10 rows of 6 numbers */
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .number-card {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .number-card:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .number-card.selected {
+            background-color: var(--secondary);
+            color: var(--light);
+        }
+        
+        .number-card.drawn {
+            background-color: var(--success);
+            color: var(--light);
+        }
+        
+        .number-card.match {
+            background-color: var(--accent);
+            color: var(--dark);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--light);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary {
+            background-color: #ddd;
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #ccc;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(78, 46, 135, 0.1);
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .results-title {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .results-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        
+        .result-item {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: var(--dark);
+            opacity: 0.7;
+        }
+        
+        .winning-animation {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--success);
+        }
+        
+        .pixel-monkey {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .pixel-monkey.visible {
+            opacity: 1;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: var(--dark);
+            opacity: 0.7;
+            font-size: 0.8rem;
+        }
+        
+        .multiplier-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .contract-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(78, 46, 135, 0.05);
+            border-radius: 10px;
+        }
+        
+        .contract-address {
+            font-family: monospace;
+            font-size: 0.9rem;
+            background-color: rgba(78, 46, 135, 0.1);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(20, 1fr);
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .wallet-info {
+                align-items: flex-start;
+                margin-top: 10px;
+            }
+        }
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="title">
+                <h1>MonKe Keno</h1>
+                <div class="monkey-logo" id="monkeyLogo">
+                    <!-- Pixelated Monkey SVG -->
+                    <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="2" width="4" height="4" fill="#8B4513" />
+                        <rect x="12" y="2" width="4" height="4" fill="#8B4513" />
+                        <rect x="4" y="6" width="12" height="6" fill="#D2691E" />
+                        <rect x="6" y="8" width="2" height="2" fill="#000" />
+                        <rect x="12" y="8" width="2" height="2" fill="#000" />
+                        <rect x="8" y="10" width="4" height="2" fill="#8B4513" />
+                        <rect x="4" y="12" width="4" height="2" fill="#D2691E" />
+                        <rect x="12" y="12" width="4" height="2" fill="#D2691E" />
+                    </svg>
+                </div>
+            </div>
+            <div class="wallet-info" id="walletInfo">
+                <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+            </div>
+        </header>
+        
+        <div class="contract-info">
+            <p><strong>MonKe Contract Info:</strong></p>
+            <p class="contract-address" id="contractAddress">Loading contract address...</p>
+            <p>Contract Balance: <span id="contractBalance">Loading...</span> MONAD</p>
+        </div>
+        
+        <div class="game-settings">
+            <div class="setting-group">
+                <label for="wagerAmount">Wager Amount (MONAD)</label>
+                <input type="number" id="wagerAmount" min="1" max="1000" value="10" step="1">
+            </div>
+            
+            <div class="setting-group">
+                <label for="difficultyLevel">Difficulty Level</label>
+                <div class="difficulty-level">
+                    <button class="difficulty-btn active" data-level="easy">Easy</button>
+                    <button class="difficulty-btn" data-level="medium">Medium</button>
+                    <button class="difficulty-btn" data-level="hard">Hard</button>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label id="multiplierLabel">Multiplier (Based on Selections)</label>
+                <div class="multiplier-display" id="multiplierDisplay">Select numbers to see multiplier</div>
+            </div>
+        </div>
+        
+        <div class="game-info" id="gameInfo">
+            <p>Select up to <span id="maxSelectable">10</span> numbers. The game will draw <span id="numbersToDraw">10</span> numbers.</p>
+            <p>Current selection: <span id="selectionCount">0</span>/<span id="maxSelectionCount">10</span></p>
+        </div>
+        
+        <div class="game-board" id="gameBoard">
+            <!-- Numbers will be generated dynamically -->
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-secondary" id="randomBtn">Random</button>
+            <button class="btn btn-primary" id="playBtn" disabled>Play</button>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <h2 class="results-title">Game Results</h2>
+            <div class="results-content">
+                <div class="result-item">
+                    <div class="result-value" id="matchesValue">0</div>
+                    <div class="result-label">Matches</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="payoutValue">0</div>
+                    <div class="result-label">Payout (MONAD)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="multiplierValue">0x</div>
+                    <div class="result-label">Applied Multiplier</div>
+                </div>
+            </div>
+            <div class="winning-animation" id="winningAnimation"></div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+            </div>
+        </div>
+        
+        <div class="pixel-monkey" id="pixelMonkey">
+            <!-- Easter Egg Pixelated Monkey SVG -->
+            <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="1" width="2" height="2" fill="#8B4513" />
+                <rect x="6" y="1" width="2" height="2" fill="#8B4513" />
+                <rect x="2" y="3" width="6" height="3" fill="#D2691E" />
+                <rect x="3" y="4" width="1" height="1" fill="#000" />
+                <rect x="6" y="4" width="1" height="1" fill="#000" />
+                <rect x="4" y="5" width="2" height="1" fill="#8B4513" />
+                <rect x="2" y="6" width="2" height="1" fill="#D2691E" />
+                <rect x="6" y="6" width="2" height="1" fill="#D2691E" />
+            </svg>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 MonKe Keno | Play responsibly on Monad Blockchain</p>
+            <a href="#" id="downloadFilesBtn">Download Project Files</a>
+        </footer>
+    </div>
+
+    <!-- Include ethers.js for wallet connection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="frontend.js"></script>
+</body>
+</html>
