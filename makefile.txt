@@ -1,0 +1,34 @@
+-include .env
+
+.PHONY: all test clean deploy-monad verify help
+
+help:
+	@echo "Usage:"
+	@echo "  make deploy-monad    - Deploy the contract to Monad blockchain"
+	@echo "  make verify           - Verify contract on block explorer"
+	@echo "  make test             - Run forge tests"
+	@echo "  make clean            - Remove build artifacts"
+
+# Install dependencies
+install:
+	forge install OpenZeppelin/openzeppelin-contracts
+
+# Build the project
+build:
+	forge build
+
+# Run tests
+test:
+	forge test -vv
+
+# Deploy contract to Monad
+deploy-monad:
+	forge script script/DeployMonKeKeno.s.sol:DeployMonKeKeno --rpc-url $(MONAD_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast
+
+# Verify contract (adjust the URL and arguments as needed)
+verify:
+	forge verify-contract --chain-id ${MONAD_CHAIN_ID} --watch --constructor-args $(cast abi-encode "constructor()") ${CONTRACT_ADDRESS} src/MonKeKeno.sol:MonKeKeno --etherscan-api-key ${MONAD_API_KEY}
+
+# Clean build artifacts
+clean:
+	forge clean
