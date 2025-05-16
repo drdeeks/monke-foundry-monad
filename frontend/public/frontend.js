@@ -685,11 +685,14 @@ async function playGame() {
     showTxStatus('pending', 'Transaction pending...');
     
     try {
+        // Prepare wager amount in wei (convert from MONAD to wei)
+        const wagerAmountWei = ethers.parseEther(state.wagerAmount.toString());
+        
         // Call the contract to play the game
-        // This will be adjusted based on your actual contract methods
         const tx = await state.contract.playKeno(
             state.selectedNumbers,
-            { value: ethers.parseEther(state.wagerAmount.toString()) }
+            state.difficulty,
+            { value: wagerAmountWei }
         );
         
         showTxStatus('pending', 'Transaction sent! Waiting for confirmation...');
@@ -700,23 +703,39 @@ async function playGame() {
         console.log("Transaction confirmed:", receipt);
         
         // Get game result from transaction events
-        const event = receipt.logs
-            .filter(log => log.fragment && log.fragment.name === 'GamePlayed')
-            .map(log => state.contract.interface.parseLog(log))
-            .find(Boolean);
-        
-        if (event) {
+        const gamePlayedEvent = receipt.logs
+            .find(log => {
+                try {
+                    // For ethers v6, we need to decode the log differently
+                    const decoded = state.contract.interface.parseLog({
+                        topics: log.topics,
+                        data: log.data
+                    });
+                    return decoded && decoded.name === 'GamePlayed';
+                } catch (e) {
+                    return false;
+                }
+            });
+            
+        if (gamePlayedEvent) {
+            // Parse the event data
+            const event = state.contract.interface.parseLog({
+                topics: gamePlayedEvent.topics,
+                data: gamePlayedEvent.data
+            });
+            
             // Process the result
             processGameResult(event.args);
         } else {
-            // Simulate game result for testing
+            // Fallback to simulation if we can't find the event
+            console.warn("Could not find GamePlayed event, using simulation instead");
             simulateGameResult();
         }
         
         showTxStatus('success', 'Transaction confirmed!');
     } catch (error) {
         console.error("Error playing game:", error);
-        showTxStatus('error', 'Transaction failed. See console for details.');
+        showTxStatus('error', 'Transaction failed: ' + (error.message || "Unknown error"));
         
         // Reset game state
         state.gameInProgress = false;
@@ -727,7 +746,7 @@ async function playGame() {
         // Show notification
         showNotification(
             "Game Error", 
-            "Failed to play the game. Please try again later."
+            "Failed to play the game: " + (error.message || "Please try again later.")
         );
     }
 }
