@@ -152,45 +152,11 @@
             margin-top: 10px;
             color: #7f8c8d;
         }
-
-        .connect-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .connect-button:hover {
-            background-color: #2980b9;
-        }
-
-        .network-indicator {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-bottom: 15px;
-        }
-
-        .error-message {
-            color: #e74c3c;
-            margin-top: 10px;
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
     <div class="game-container">
         <h1>Lottery Game</h1>
-        
-        <div id="connectSection">
-            <button id="connectButton" class="connect-button">Connect Wallet</button>
-            <div id="networkIndicator" class="network-indicator"></div>
-        </div>
         
         <div class="numbers-container" id="numbersContainer">
             <!-- Numbers will be generated dynamically -->
@@ -199,25 +165,19 @@
             </div>
         </div>
         
-        <button id="playButton" class="play-button" disabled>
+        <button id="playButton" class="play-button">
             Play
             <span id="loadingIndicator" class="loading-indicator" style="display: none;"></span>
         </button>
         
-        <div class="status" id="status">Please connect your wallet to play</div>
+        <div class="status" id="status"></div>
         <div class="transaction-hash" id="transactionHash"></div>
-        <div class="balance" id="balance">Balance: -- ETH</div>
-        <div class="error-message" id="errorMessage"></div>
+        <div class="balance" id="balance">Balance: 0 ETH</div>
     </div>
 
-    <!-- Import ethers.js library -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.0.umd.min.js" type="application/javascript"></script>
-    
     <script>
-        // Your contract address
+        // Mock values for testing - replace these with your actual contract values
         const contractAddress = "0x56Df969bc8C91989FA5d6cBa7E9B91486e728080";
-        
-        // Contract ABI (Application Binary Interface)
         const contractABI = [
             {
                 "inputs": [],
@@ -244,44 +204,8 @@
                 ],
                 "stateMutability": "view",
                 "type": "function"
-            },
-            {
-                "inputs": [],
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": false,
-                        "internalType": "address",
-                        "name": "player",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "bool",
-                        "name": "won",
-                        "type": "bool"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256[]",
-                        "name": "numbers",
-                        "type": "uint256[]"
-                    }
-                ],
-                "name": "GamePlayed",
-                "type": "event"
             }
         ];
-
-        // Global variables
-        let provider;
-        let signer;
-        let contract;
-        let isConnected = false;
 
         document.addEventListener('DOMContentLoaded', async function() {
             // Generate numbers
@@ -294,101 +218,32 @@
                 numbersContainer.appendChild(numberElement);
             }
 
-            // Set up connect button
-            const connectButton = document.getElementById('connectButton');
-            connectButton.addEventListener('click', connectWallet);
+            Setup web3 provider (uncomment when ready to use with real contract)
+        
+            if (window.ethereum) {
+                window.web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.enable();
+                    // Get initial balance when page loads
+                    await updateBalance('before');
+                } catch (error) {
+                    console.error("User denied account access");
+                }
+            } else {
+                console.log("No Ethereum browser extension detected");
+                document.getElementById('status').textContent = "Please install MetaMask to play";
+            }
+        
+            
+            // For demo: Get initial balance when page loads
+            await updateBalance('before');
 
             // Set up play button
             const playButton = document.getElementById('playButton');
             playButton.addEventListener('click', playGame);
-
-            // Check if already connected
-            checkConnection();
         });
 
-        // Check if already connected
-        async function checkConnection() {
-            if (window.ethereum) {
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                
-                // Check if already connected
-                const accounts = await provider.listAccounts();
-                if (accounts.length > 0) {
-                    await connectWallet();
-                }
-                
-                // Listen for account changes
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    if (accounts.length > 0) {
-                        connectWallet();
-                    } else {
-                        disconnectWallet();
-                    }
-                });
-                
-                // Listen for network changes
-                window.ethereum.on('chainChanged', () => {
-                    window.location.reload();
-                });
-            } else {
-                document.getElementById('errorMessage').textContent = "MetaMask not detected. Please install MetaMask to play.";
-                document.getElementById('connectButton').disabled = true;
-            }
-        }
-
-        // Connect wallet function
-        async function connectWallet() {
-            try {
-                if (window.ethereum) {
-                    // Request account access
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
-                    signer = provider.getSigner();
-                    contract = new ethers.Contract(contractAddress, contractABI, signer);
-                    
-                    // Get connected account
-                    const address = await signer.getAddress();
-                    const shortAddress = address.slice(0, 6) + '...' + address.slice(-4);
-                    
-                    // Get connected network
-                    const network = await provider.getNetwork();
-                    
-                    // Update UI
-                    document.getElementById('connectButton').textContent = shortAddress;
-                    document.getElementById('networkIndicator').textContent = `Network: ${network.name}`;
-                    document.getElementById('playButton').disabled = false;
-                    document.getElementById('status').textContent = "Connected! Press Play to start.";
-                    document.getElementById('errorMessage').textContent = "";
-                    
-                    // Get initial balance
-                    await updateBalance('before');
-                    
-                    isConnected = true;
-                }
-            } catch (error) {
-                console.error("Connection error:", error);
-                document.getElementById('errorMessage').textContent = `Connection error: ${error.message}`;
-            }
-        }
-
-        // Disconnect wallet function
-        function disconnectWallet() {
-            document.getElementById('connectButton').textContent = "Connect Wallet";
-            document.getElementById('networkIndicator').textContent = "";
-            document.getElementById('playButton').disabled = true;
-            document.getElementById('status').textContent = "Please connect your wallet to play";
-            document.getElementById('balance').textContent = "Balance: -- ETH";
-            isConnected = false;
-        }
-
-        // Play game function
         async function playGame() {
-            if (!isConnected) {
-                document.getElementById('status').textContent = "Please connect your wallet first!";
-                return;
-            }
-            
             try {
                 // Disable button and show loading
                 const playButton = document.getElementById('playButton');
@@ -396,14 +251,12 @@
                 const statusElement = document.getElementById('status');
                 const resultOverlay = document.getElementById('resultOverlay');
                 const resultMessage = document.getElementById('resultMessage');
-                const errorMessage = document.getElementById('errorMessage');
                 
                 // Reset UI state
                 resultOverlay.classList.remove('visible');
                 statusElement.textContent = 'Playing...';
                 playButton.disabled = true;
                 loadingIndicator.style.display = 'inline-block';
-                errorMessage.textContent = "";
                 
                 // Reset numbers to question marks
                 for (let i = 1; i <= 5; i++) {
@@ -412,149 +265,180 @@
                     number.classList.remove('selected');
                 }
 
-                // Get user balance BEFORE playing
+                Get user balance BEFORE playing
                 await updateBalance('before');
                 
-                // Call the smart contract to play the game
+                // In a real implementation, we would call the contract here
+                // Uncomment the line below to use the real contract call
                 const receipt = await playGameWithContract();
                 
-                // Process receipt to get game results
-                const gameEvent = receipt.events.find(event => event.event === 'GamePlayed');
+                // For demo purposes, we'll simulate the transaction with a timeout
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                if (gameEvent) {
-                    const won = gameEvent.args.won;
-                    const numbers = gameEvent.args.numbers.map(n => n.toNumber());
+                // Generate random numbers and animate their selection
+                const selectedNumbers = [];
+                for (let i = 1; i <= 5; i++) {
+                    // Generate a random number between 1 and 99
+                    const randomNum = Math.floor(Math.random() * 99) + 1;
+                    selectedNumbers.push(randomNum);
                     
-                    // Display numbers with animation
-                    for (let i = 0; i < 5; i++) {
-                        await new Promise(resolve => setTimeout(resolve, 400));
-                        const numberElement = document.getElementById(`number-${i+1}`);
-                        numberElement.textContent = numbers[i];
-                        numberElement.classList.add('selected');
-                    }
-                    
-                    // After numbers are displayed, show result
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    
-                    // Show the result overlay
-                    resultMessage.textContent = won ? 
-                        `You Win!` : 
-                        `You Lose!`;
-                    resultMessage.className = `result-message ${won ? 'win' : 'lose'}`;
-                    resultOverlay.classList.add('visible');
-                    
-                    // Update status
-                    statusElement.textContent = won ? 
-                        'Congratulations! You won!' : 
-                        'Better luck next time!';
-                } else {
-                    // Fallback if event not found - should never happen with proper contract
-                    statusElement.textContent = "Game played, but couldn't get result details";
+                    // Update UI with a delay for visual effect
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                    const numberElement = document.getElementById(`number-${i}`);
+                    numberElement.textContent = randomNum;
+                    numberElement.classList.add('selected');
                 }
+
+                // Determine if player won (for demo purposes: win if the sum is even)
+                const sum = selectedNumbers.reduce((a, b) => a + b, 0);
+                const won = sum % 2 === 0;
+                
+                // Simulate waiting for transaction confirmation
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Update transaction hash (for demo)
+                document.getElementById('transactionHash').textContent = 
+                    `Transaction Hash: 0x${Math.random().toString(16).substr(2, 40)}`;
+                
+                // Show the result overlay after the numbers are displayed
+                resultMessage.textContent = won ? 
+                    `You Win! Sum: ${sum}` : 
+                    `You Lose! Sum: ${sum}`;
+                resultMessage.className = `result-message ${won ? 'win' : 'lose'}`;
+                
+                // Wait a moment after all numbers are displayed before showing the result
+                await new Promise(resolve => setTimeout(resolve, 800));
+                resultOverlay.classList.add('visible');
+                
+                // Update status
+                statusElement.textContent = won ? 'Congratulations! You won!' : 'Better luck next time!';
                 
                 // Get user balance AFTER playing
                 await updateBalance('after');
                 
+                // Re-enable the play button
+                playButton.disabled = false;
+                loadingIndicator.style.display = 'none';
+                
             } catch (error) {
                 console.error("Error playing game:", error);
-                document.getElementById('errorMessage').textContent = `Error: ${error.message}`;
-                document.getElementById('status').textContent = "Error occurred while playing";
-            } finally {
-                // Re-enable the play button
+                document.getElementById('status').textContent = `Error: ${error.message}`;
                 document.getElementById('playButton').disabled = false;
                 document.getElementById('loadingIndicator').style.display = 'none';
             }
         }
 
-        // Update balance function
+        // Mock function to update balance (replace with actual contract call)
         async function updateBalance(timepoint = '') {
             try {
-                if (!isConnected) return;
-                
                 const balanceElement = document.getElementById('balance');
                 let currentBalanceText = balanceElement.textContent;
                 let currentBalance = parseFloat(currentBalanceText.replace('Balance: ', ''));
                 
-                // Get actual balance from contract/wallet
-                const balance = await getContractBalance();
+                // In a real implementation, you would call your contract here
+                // const balance = await getContractBalance();
+                
+                // For demo, we'll simulate different balances before and after playing
+                let mockBalance;
                 
                 if (timepoint === 'before') {
-                    // Initial balance display
-                    balanceElement.textContent = `Balance: ${balance} ETH`;
-                    console.log("Retrieved initial balance:", balance);
+                    // For demo: show initial balance
+                    mockBalance = (10 + Math.random()).toFixed(4);
+                    balanceElement.textContent = `Balance: ${mockBalance} ETH`;
+                    console.log("Retrieved initial balance:", mockBalance);
                 } 
                 else if (timepoint === 'after') {
-                    // After gameplay - highlight change
-                    const prevBalance = currentBalance;
-                    const change = balance - prevBalance;
+                    // For demo: simulating a slight change after playing
+                    const change = (Math.random() > 0.5) ? 0.1 : -0.05;
+                    mockBalance = (currentBalance + change).toFixed(4);
                     
                     // Animate the balance change
                     balanceElement.style.transition = 'color 1s';
-                    balanceElement.style.color = change >= 0 ? '#27ae60' : '#e74c3c';
-                    balanceElement.textContent = `Balance: ${balance} ETH`;
+                    balanceElement.style.color = change > 0 ? '#27ae60' : '#e74c3c';
+                    balanceElement.textContent = `Balance: ${mockBalance} ETH`;
                     
                     setTimeout(() => {
                         balanceElement.style.color = '#2c3e50';
                     }, 1500);
                     
-                    console.log("Updated balance after game:", balance);
+                    console.log("Updated balance after game:", mockBalance);
                 }
                 else {
                     // General balance check
-                    balanceElement.textContent = `Balance: ${balance} ETH`;
+                    mockBalance = (Math.random() * 10).toFixed(4);
+                    balanceElement.textContent = `Balance: ${mockBalance} ETH`;
                 }
                 
-                return balance;
+                return mockBalance;
             } catch (error) {
                 console.error("Error updating balance:", error);
                 document.getElementById('balance').textContent = "Balance: Error";
-                document.getElementById('errorMessage').textContent = `Error updating balance: ${error.message}`;
             }
         }
 
-        // Actually play the game via contract
+        // This would be your actual contract interaction in a real implementation
         async function playGameWithContract() {
             try {
-                if (!isConnected) {
-                    throw new Error("Wallet not connected");
+                // Check if Web3 is injected by MetaMask
+                if (window.ethereum) {
+                    // Request access to the user's MetaMask accounts
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Create a Web3 provider
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const signer = provider.getSigner();
+                    
+                    // Create contract instance
+                    const contract = new ethers.Contract(contractAddress, contractABI, signer);
+                    
+                    // Call the play function
+                    const tx = await contract.play({ value: ethers.utils.parseEther("0.01") });
+                    
+                    // Wait for transaction to be mined
+                    const receipt = await tx.wait();
+                    console.log("Transaction successful:", receipt);
+                    
+                    // Update transaction hash display
+                    document.getElementById('transactionHash').textContent = `Transaction Hash: ${tx.hash}`;
+                    
+                    return receipt;
+                } else {
+                    throw new Error("MetaMask is not installed. Please install MetaMask and try again.");
                 }
-                
-                // Play the game - we'll send 0.01 ETH with the transaction
-                const tx = await contract.play({ 
-                    value: ethers.utils.parseEther("0.01"),
-                    gasLimit: 500000 // Set appropriate gas limit
-                });
-                
-                document.getElementById('status').textContent = "Transaction sent! Waiting for confirmation...";
-                document.getElementById('transactionHash').textContent = `Transaction Hash: ${tx.hash}`;
-                
-                // Wait for transaction to be mined
-                const receipt = await tx.wait();
-                console.log("Transaction successful:", receipt);
-                
-                return receipt;
             } catch (error) {
                 console.error("Error in contract interaction:", error);
                 throw error;
             }
         }
         
-        // Get wallet/contract balance
+        // Function to get contract balance (for real implementation)
         async function getContractBalance() {
             try {
-                if (!isConnected) {
-                    throw new Error("Wallet not connected");
+                if (window.ethereum) {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const signer = provider.getSigner();
+                    const contract = new ethers.Contract(contractAddress, contractABI, signer);
+                    
+                    // Get user's account
+                    const accounts = await provider.listAccounts();
+                    const userAccount = accounts[0];
+                    
+                    // Get user's balance
+                    let balance;
+                    
+                    // Option 1: Get ETH balance from account
+                    balance = await provider.getBalance(userAccount);
+                    
+                    // Option 2: If your contract has a balanceOf function
+                    // balance = await contract.balanceOf(userAccount);
+                    
+                    // Option 3: If your contract has a getBalance function
+                    // balance = await contract.getBalance();
+                    
+                    return ethers.utils.formatEther(balance);
+                } else {
+                    throw new Error("MetaMask not found");
                 }
-                
-                // Get user's account
-                const userAddress = await signer.getAddress();
-                
-                // Get user's ETH balance
-                const balanceWei = await provider.getBalance(userAddress);
-                const balanceEth = ethers.utils.formatEther(balanceWei);
-                
-                // Return formatted balance with 4 decimal places
-                return parseFloat(balanceEth).toFixed(4);
             } catch (error) {
                 console.error("Error getting balance:", error);
                 throw error;
@@ -563,4 +447,3 @@
     </script>
 </body>
 </html>
-
