@@ -1,4 +1,3 @@
-
 // Play the game
 async function playGame() {
     if (!validateGameSettings()) return;
