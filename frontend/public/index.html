@@ -3,383 +3,1281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MonKe - Blockchain Lottery Game</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <title>Blockchain Keno Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <style>
-        :root {
-            --primary-color: #F9A826;
-            --secondary-color: #4F46E5;
-            --dark-bg: #1F2937;
-            --darker-bg: #111827;
-            --light-text: #F3F4F6;
-        }
-        
         body {
-            background-color: var(--dark-bg);
-            color: var(--light-text);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         
-        .header {
-            background-color: var(--darker-bg);
-            border-bottom: 2px solid var(--primary-color);
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
-        .primary-btn {
-            background-color: var(--primary-color);
-            color: var(--darker-bg);
-            font-weight: bold;
-            transition: all 0.3s ease;
+        header {
+            background-color: #333;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
-        .primary-btn:hover {
-            background-color: #E69016;
-            transform: translateY(-2px);
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #4caf50;
         }
         
-        .primary-btn:disabled {
-            background-color: #7C6A36;
-            cursor: not-allowed;
-            transform: none;
+        .wallet-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
         }
         
-        .secondary-btn {
-            background-color: var(--secondary-color);
-            color: var(--light-text);
-            transition: all 0.3s ease;
-        }
-        
-        .secondary-btn:hover {
-            background-color: #3D37B3;
-            transform: translateY(-2px);
-        }
-        
-        .connect-wallet-btn {
-            background-color: var(--primary-color);
-            color: var(--darker-bg);
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .connect-wallet-btn:hover {
-            background-color: #E69016;
-        }
-        
-        .wallet-balance {
-            font-weight: bold;
-            color: var(--primary-color);
-            font-size: 1.125rem;
+        .wallet-info {
+            display: flex;
+            flex-direction: column;
         }
         
         .wallet-address {
-            font-size: 0.875rem;
-            color: #9CA3AF;
+            font-family: monospace;
+            font-size: 14px;
+            opacity: 0.8;
         }
         
-        .network-indicator {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
+        .wallet-balance {
+            font-size: 18px;
             font-weight: bold;
+            margin-top: 5px;
         }
         
-        .network-monad {
-            background-color: #34D399;
-            color: #064E3B;
+        .connect-wallet-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
         }
         
-        .network-monad-testnet {
-            background-color: #60A5FA;
-            color: #1E3A8A;
+        .connect-wallet-btn:hover {
+            background-color: #388e3c;
         }
         
-        .network-other {
-            background-color: #F87171;
-            color: #7F1D1D;
+        .game-section {
+            background-color: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-group label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #aaa;
+        }
+        
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
         }
         
         .difficulty-btn {
-            background-color: #374151;
-            color: #D1D5DB;
-            transition: all 0.3s ease;
-        }
-        
-        .difficulty-btn:hover {
-            background-color: #4B5563;
+            flex: 1;
+            padding: 8px 0;
+            background-color: #555;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
         
         .difficulty-btn.active {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
-        .number-card {
-            width: 3rem;
-            height: 3rem;
-            background-color: #374151;
-            color: #D1D5DB;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: #2196f3;
             font-weight: bold;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
         }
         
-        .number-card:hover {
-            background-color: #4B5563;
-            transform: translateY(-2px);
-        }
-        
-        .number-card.selected {
-            background-color: var(--primary-color);
-            color: var(--darker-bg);
-        }
-        
-        .number-card.drawn {
-            border: 2px solid var(--secondary-color);
-        }
-        
-        .number-card.match {
-            background-color: var(--secondary-color);
+        .wager-input {
+            width: 100%;
+            padding: 8px;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
             color: white;
-            transform: scale(1.1);
         }
         
-        .info-panel {
-            background-color: var(--darker-bg);
-            border-radius: 0.5rem;
+        .selection-buttons {
+            display: flex;
+            gap: 10px;
         }
         
-        .results-section {
-            background-color: var(--darker-bg);
-            border: 2px solid var(--primary-color);
-            border-radius: 0.5rem;
-        }
-        
-        .pixel-monkey {
-            position: fixed;
-            width: 50px;
-            height: 50px;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCI+PHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjRjlBODI2Ii8+PHJlY3QgeD0iNyIgeT0iNyIgd2lkdGg9IjIiIGhlaWdodD0iMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjExIiB5PSI3IiB3aWR0aD0iMiIgaGVpZ2h0PSIyIiBmaWxsPSIjMDAwIi8+PHJlY3QgeD0iOCIgeT0iMTEiIHdpZHRoPSI0IiBoZWlnaHQ9IjIiIGZpbGw9IiMwMDAiLz48L3N2Zz4=');
-            background-repeat: no-repeat;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
-        }
-        
-        .pixel-monkey.visible {
-            opacity: 1;
-            pointer-events: auto;
+        .action-btn {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn.clear-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .action-btn.random-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .action-btn.play-btn {
+            background-color: #4caf50;
+            color: white;
+            font-size: 16px;
+            padding: 12px 0;
+        }
+        
+        .action-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .multiplier-display {
+            text-align: center;
+            font-size: 18px;
+            margin: 15px 0;
+            font-weight: bold;
+            color: #2196f3;
+        }
+        
+        .result-section {
+            display: flex;
+            justify-content: space-around;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            gap: 20px;
+        }
+        
+        .result-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .result-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
         }
         
         .tx-status {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-weight: bold;
-            margin-top: 1rem;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
         }
         
-        .tx-pending {
-            background-color: #FEF3C7;
-            color: #92400E;
+        .winning-animation {
+            text-align: center;
+            display: none;
+            margin: 20px 0;
         }
         
-        .tx-success {
-            background-color: #D1FAE5;
-            color: #065F46;
+        .pixel-monkey {
+            font-size: 40px;
         }
         
-        .tx-error {
-            background-color: #FEE2E2;
-            color: #B91C1C;
+        @keyframes dance {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(10deg) scale(1.1); }
+            50% { transform: rotate(-10deg) scale(1.2); }
+            75% { transform: rotate(10deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
         }
         
         .notification-modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
         }
         
         .modal-content {
-            background-color: var(--dark-bg);
-            border-radius: 0.5rem;
-            max-width: 28rem;
-            width: 90%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 100%;
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
         
-        .winning-animation {
-            animation: pulse 1s infinite;
-            font-size: 1.5rem;
+        .modal-title {
+            font-size: 20px;
             font-weight: bold;
-            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            text-align: right;
+        }
+        
+        .modal-confirm-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        /* Game Board Styles */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .number-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            background-color: #555;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .number-card:hover {
+            background-color: #777;
+            transform: scale(1.05);
+        }
+        
+        .number-card.selected {
+            background-color: #3f51b5;
+            font-weight: bold;
+        }
+        
+        /* Selected Numbers Display */
+        .selected-numbers-display {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: #252525;
+        }
+        
+        .selected-numbers-display h4 {
+            margin: 0 0 10px 0;
+            text-align: center;
+            color: #ddd;
+        }
+        
+        .number-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .number-chip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .number-chip:hover {
+            transform: scale(1.1);
+            background-color: #388e3c;
+        }
+        
+        /* Game Result Overlay */
+        .game-result-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s;
+        }
+        
+        .result-content {
+            background-color: #333;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            max-width: 300px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .result-status {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .result-status.win {
+            color: #4caf50;
+        }
+        
+        .result-status.lose {
+            color: #f44336;
+        }
+        
+        .result-details {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        /* Contract Verification Status */
+        .contract-status {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.verified {
+            background-color: #4caf50;
+        }
+        
+        .status-indicator.not-verified {
+            background-color: #f44336;
+        }
+        
+        /* Game Board Selection Styles */
+        .number-card.drawn {
+            background-color: #7986cb;
+            color: white;
+        }
+        
+        .number-card.matched {
+            background-color: #4caf50;
+            color: white;
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
 <body>
-    <header class="header py-4 px-6 flex items-center justify-between">
-        <div class="flex items-center">
-            <div id="monkeyLogo" class="mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 20 20" class="cursor-pointer">
-                    <rect x="5" y="5" width="10" height="10" fill="#F9A826"/>
-                    <rect x="7" y="7" width="2" height="2" fill="#000"/>
-                    <rect x="11" y="7" width="2" height="2" fill="#000"/>
-                    <rect x="8" y="11" width="4" height="2" fill="#000"/>
-                </svg>
-            </div>
-            <h1 class="text-2xl font-bold">MonKe</h1>
-        </div>
-        <div id="walletInfo">
-            <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
-            <div id="networkInfo" style="display: none;">
-                <span class="network-indicator" id="networkIndicator">Network</span>
-            </div>
-        </div>
+    <header>
+        <h1>Blockchain Keno Game</h1>
     </header>
-
-    <main class="container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Contract Info Panel -->
-            <div class="info-panel p-4 col-span-1">
-                <h2 class="text-xl font-bold mb-4">Contract Info</h2>
-                <div class="mb-2">
-                    <span class="text-gray-400">Address:</span>
-                    <span id="contractAddress" class="ml-2 text-sm font-mono">Not connected</span>
-                </div>
-                <div class="mb-2">
-                    <span class="text-gray-400">Balance:</span>
-                    <span id="contractBalance" class="ml-2">N/A</span> MONAD
-                </div>
-                <hr class="my-4 border-gray-700">
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold mb-2">Choose Difficulty</h3>
-                    <div class="flex space-x-2">
-                        <button id="easyBtn" class="difficulty-btn px-3 py-1 rounded-md active">Easy</button>
-                        <button id="mediumBtn" class="difficulty-btn px-3 py-1 rounded-md">Medium</button>
-                        <button id="hardBtn" class="difficulty-btn px-3 py-1 rounded-md">Hard</button>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold mb-2">Game Settings</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <span class="text-gray-400">Max Selection:</span>
-                            <span id="maxSelectable">10</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-400">Numbers Drawn:</span>
-                            <span id="numbersToDraw">20</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold mb-2">Wager Amount</h3>
-                    <input type="number" id="wagerAmount" value="10" min="1" step="1" class="bg-gray-700 text-white px-3 py-2 rounded-md w-full">
-                </div>
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold mb-2">Multiplier</h3>
-                    <div id="multiplierDisplay" class="text-primary-color">Select numbers to see multiplier</div>
-                </div>
-                <div class="flex justify-end mt-4">
-                    <button id="downloadFilesBtn" class="secondary-btn px-4 py-2 rounded-lg text-sm">
-                        Download Project Files
-                    </button>
+    
+    <div class="container">
+        <div class="wallet-section">
+            <div class="wallet-info">
+                <span class="wallet-status">Not connected</span>
+                <span class="wallet-address"></span>
+                <span class="wallet-balance"></span>
+                <div class="contract-status">
+                    <div class="status-indicator"></div>
+                    <span class="contract-verification">Contract not verified</span>
                 </div>
             </div>
-
-            <!-- Game Board -->
-            <div class="col-span-1 md:col-span-2">
-                <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-xl font-bold">Select Your Numbers</h2>
-                    <div>
-                        <span id="selectionCount">0</span>/<span id="maxSelectionCount">10</span> selected
+            <button class="connect-wallet-btn">Connect Wallet</button>
+        </div>
+        
+        <div class="game-section">
+            <div class="game-controls">
+                <div class="control-group">
+                    <label>Difficulty:</label>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn easy-btn active">Easy</button>
+                        <button class="difficulty-btn medium-btn">Medium</button>
+                        <button class="difficulty-btn hard-btn">Hard</button>
                     </div>
-                </div>
-                <div id="gameBoard" class="grid grid-cols-6 sm:grid-cols-10 gap-2 mb-4">
-                    <!-- Number cards will be dynamically inserted here -->
-                </div>
-                <div class="flex space-x-2 mb-4">
-                    <button id="clearBtn" class="secondary-btn px-4 py-2 rounded-md">Clear</button>
-                    <button id="randomBtn" class="secondary-btn px-4 py-2 rounded-md">Random</button>
-                    <button id="playBtn" class="primary-btn px-6 py-2 rounded-md flex-grow" disabled>Play</button>
                 </div>
                 
-                <div id="txStatus" class="tx-status" style="display: none;"></div>
+                <div class="control-group">
+                    <label>Wager Amount (ETH):</label>
+                    <input type="number" class="wager-input" id="wager-amount" min="0.001" step="0.001" value="0.01">
+                </div>
                 
-                <!-- Results Section -->
-                <div id="resultsSection" class="results-section p-4 mt-6" style="display: none;">
-                    <h2 class="text-xl font-bold mb-4">Game Results</h2>
-                    <div id="winningAnimation" class="winning-animation text-center py-4"></div>
-                    <div class="grid grid-cols-3 gap-4 mb-6">
-                        <div class="text-center">
-                            <div class="text-gray-400">Matches</div>
-                            <div id="matchesValue" class="text-2xl font-bold">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-gray-400">Multiplier</div>
-                            <div id="multiplierValue" class="text-2xl font-bold">0x</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-gray-400">Payout</div>
-                            <div id="payoutValue" class="text-2xl font-bold text-primary-color">0</div>
-                        </div>
-                    </div>
-                    <div class="flex justify-center">
-                        <button id="playAgainBtn" class="primary-btn px-6 py-2 rounded-md">Play Again</button>
+                <div class="control-group">
+                    <label>Selection:</label>
+                    <div class="selection-buttons">
+                        <button class="action-btn clear-btn">Clear</button>
+                        <button class="action-btn random-btn">Random</button>
                     </div>
                 </div>
+            </div>
+            
+            <div class="multiplier-display">
+                Potential Multiplier: <span class="multiplier-value">0x</span>
+            </div>
+            
+            <div class="selected-numbers-display">
+                <h4>Selected Numbers</h4>
+                <div class="number-chips" id="selected-chips"></div>
+            </div>
+            
+            <div class="game-board" id="game-board">
+                <!-- Number cards will be generated here -->
+            </div>
+            
+            <button class="action-btn play-btn" disabled>Play Game</button>
+            
+            <div class="tx-status">Transaction pending...</div>
+            
+            <div class="result-section">
+                <div class="result-item">
+                    <div class="result-label">Matches</div>
+                    <div class="result-value matches-value">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Payout (ETH)</div>
+                    <div class="result-value payout-value">0.0000</div>
+                </div>
+            </div>
+            
+            <div class="winning-animation">
+                <div class="pixel-monkey">🐵</div>
+                <h3>WINNER!</h3>
             </div>
         </div>
-    </main>
-
-    <!-- Notification Modal -->
-    <div id="notificationModal" class="notification-modal">
-        <div class="modal-content p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="modalTitle" class="text-xl font-bold">Notification Title</h3>
-                <button id="closeModal" class="text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
+    </div>
+    
+    <div class="game-result-overlay">
+        <div class="result-content">
+            <div class="result-status">You Won!</div>
+            <div class="result-details">
+                <p>Matches: <span class="matches-count">0</span></p>
+                <p>Payout: <span class="payout-amount">0.0000</span> ETH</p>
             </div>
-            <div id="modalBody" class="mb-6">
+        </div>
+    </div>
+    
+    <div class="notification-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Notification</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
                 Notification message goes here.
             </div>
-            <div class="flex justify-end">
-                <button id="modalConfirmBtn" class="primary-btn px-4 py-2 rounded-md">OK</button>
+            <div class="modal-footer">
+                <button class="modal-confirm-btn">OK</button>
             </div>
         </div>
     </div>
 
-    <!-- Easter Egg Pixel Monkey -->
-    <div id="pixelMonkey" class="pixel-monkey"></div>
+    <script>
+        // Configuration object
+        const config = {
+            contractAddress: "0x123456789abcdef123456789abcdef123456789a", // Replace with actual contract address
+            contractABI: [
+                // You should replace this with actual ABI
+                {
+                    "inputs": [
+                        {"internalType": "uint8[]", "name": "selectedNumbers", "type": "uint8[]"},
+                        {"internalType": "uint8", "name": "difficulty", "type": "uint8"}
+                    ],
+                    "name": "playKeno",
+                    "outputs": [
+                        {"internalType": "uint8[]", "name": "", "type": "uint8[]"},
+                        {"internalType": "uint8", "name": "", "type": "uint8"},
+                        {"internalType": "uint256", "name": "", "type": "uint256"}
+                    ],
+                    "stateMutability": "payable",
+                    "type": "function"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+                        {"indexed": false, "internalType": "uint8[]", "name": "selectedNumbers", "type": "uint8[]"},
+                        {"indexed": false, "internalType": "uint8[]", "name": "drawnNumbers", "type": "uint8[]"},
+                        {"indexed": false, "internalType": "uint8", "name": "matchCount", "type": "uint8"},
+                        {"indexed": false, "internalType": "uint256", "name": "wager", "type": "uint256"},
+                        {"indexed": false, "internalType": "uint256", "name": "payout", "type": "uint256"}
+                    ],
+                    "name": "GamePlayed",
+                    "type": "event"
+                }
+            ],
+            maxSelections: 10,
+            minWager: 0.001,
+            difficultySettings: {
+                'easy': { value: 1, maxNumbers: 5, multiplier: 2 },
+                'medium': { value: 2, maxNumbers: 8, multiplier: 5 },
+                'hard': { value: 3, maxNumbers: 10, multiplier: 10 }
+            }
+        };
+        
+        // Global state object
+        const state = {
+            connected: false,
+            account: null,
+            contract: null,
+            provider: null,
+            balance: 0,
+            verified: false,
+            selectedNumbers: [],
+            difficulty: 'easy',
+            maxSelections: 5,
+            multiplier: 2,
+            wagerAmount: 0.01,
+            gameInProgress: false,
+            drawnNumbers: [],
+            matchedNumbers: [],
+            payout: 0,
+            lastGameResult: null
+        };
+        
+        // UI elements
+        const elements = {
+            // Will be populated in initializeElements function
+        };
+        
+        // Initialize UI elements
+        function initializeElements() {
+            elements.connectWalletBtn = document.querySelector('.connect-wallet-btn');
+            elements.walletStatus = document.querySelector('.wallet-status');
+            elements.walletAddress = document.querySelector('.wallet-address');
+            elements.walletBalance = document.querySelector('.wallet-balance');
+            elements.contractVerification = document.querySelector('.contract-verification');
+            elements.statusIndicator = document.querySelector('.status-indicator');
+            
+            elements.easyBtn = document.querySelector('.easy-btn');
+            elements.mediumBtn = document.querySelector('.medium-btn');
+            elements.hardBtn = document.querySelector('.hard-btn');
+            
+            elements.wagerAmount = document.getElementById('wager-amount');
+            elements.multiplierValue = document.querySelector('.multiplier-value');
+            
+            elements.clearBtn = document.querySelector('.clear-btn');
+            elements.randomBtn = document.querySelector('.random-btn');
+            elements.playBtn = document.querySelector('.play-btn');
+            
+            elements.selectedChips = document.getElementById('selected-chips');
+            elements.gameBoard = document.getElementById('game-board');
+            
+            elements.txStatus = document.querySelector('.tx-status');
+            elements.matchesValue = document.querySelector('.matches-value');
+            elements.payoutValue = document.querySelector('.payout-value');
+            
+            elements.winningAnimation = document.querySelector('.winning-animation');
+            elements.pixelMonkey = document.querySelector('.pixel-monkey');
+            
+            elements.gameResultOverlay = document.querySelector('.game-result-overlay');
+            
+            elements.notificationModal = document.querySelector('.notification-modal');
+            elements.modalTitle = document.querySelector('.modal-title');
+            elements.modalBody = document.querySelector('.modal-body');
+            elements.closeModal = document.querySelector('.close-modal');
+            elements.modalConfirmBtn = document.querySelector('.modal-confirm-btn');
+        }
+        
+        // Connect wallet
+        async function connectWallet() {
+            if (!window.ethereum) {
+                showNotification('Wallet Error', 'No Ethereum wallet detected. Please install MetaMask or another compatible wallet.');
+                return;
+            }
+            
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                if (accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+                
+                // Set state
+                state.connected = true;
+                state.account = accounts[0];
+                
+                // Initialize provider
+                state.provider = new ethers.BrowserProvider(window.ethereum);
+                
+                // Initialize contract
+                state.contract = new ethers.Contract(
+                    config.contractAddress,
+                    config.contractABI,
+                    await state.provider.getSigner()
+                );
+                
+                // Update UI
+                elements.walletStatus.textContent = 'Connected';
+                elements.walletAddress.textContent = shortenAddress(state.account);
+                
+                // Update wallet balance
+                updateWalletBalance();
+                
+                // Verify contract
+                verifyContract();
+                
+                // Update play button state
+                updatePlayButtonState();
+                
+                // Change button text
+                elements.connectWalletBtn.textContent = 'Connected';
+                elements.connectWalletBtn.disabled = true;
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                showNotification('Connection Error', 'Failed to connect wallet. Please try again.');
+            }
+        }
+        
+        // Disconnect wallet
+        function disconnectWallet() {
+            // Reset state
+            state.connected = false;
+            state.account = null;
+            state.contract = null;
+            state.provider = null;
+            state.balance = 0;
+            state.verified = false;
+            
+            // Update UI
+            elements.walletStatus.textContent = 'Not connected';
+            elements.walletAddress.textContent = '';
+            elements.walletBalance.textContent = '';
+            elements.contractVerification.textContent = 'Contract not verified';
+            elements.statusIndicator.className = 'status-indicator';
+            
+            // Re-enable connect button
+            elements.connectWalletBtn.textContent = 'Connect Wallet';
+            elements.connectWalletBtn.disabled = false;
+            
+            // Disable play button
+            elements.playBtn.disabled = true;
+        }
+        
+        // Update wallet balance
+        async function updateWalletBalance() {
+            if (!state.connected || !state.provider) return;
+            
+            try {
+                const balance = await state.provider.getBalance(state.account);
+                state.balance = Number(ethers.formatEther(balance));
+                elements.walletBalance.textContent = `${state.balance.toFixed(4)} ETH`;
+            } catch (error) {
+                console.error('Error updating balance:', error);
+            }
+        }
+        
+        // Verify contract
+        async function verifyContract() {
+            if (!state.connected || !state.contract) return;
+            
+            try {
+                // This is normally where you would verify the contract
+                // For demonstration purposes, we'll just set it to verified
+                state.verified = true;
+                
+                // Update UI
+                elements.contractVerification.textContent = 'Contract verified';
+                elements.statusIndicator.className = 'status-indicator verified';
+            } catch (error) {
+                console.error('Error verifying contract:', error);
+                elements.contractVerification.textContent = 'Contract not verified';
+                elements.statusIndicator.className = 'status-indicator not-verified';
+            }
+        }
+        
+        // Create game board
+        function createGameBoard() {
+            if (!elements.gameBoard) return;
+            
+            // Clear existing board
+            elements.gameBoard.innerHTML = '';
+            
+            // Create number cards (1-80 for Keno)
+            for (let i = 1; i <= 80; i++) {
+                const card = document.createElement('div');
+                card.className = 'number-card';
+                card.textContent = i;
+                card.dataset.number = i;
+                
+                // Add click handler
+                card.addEventListener('click', () => toggleNumberSelection(i));
+                
+                // Append to board
+                elements.gameBoard.appendChild(card);
+            }
+        }
+        
+        // Toggle number selection
+        function toggleNumberSelection(number) {
+            // Don't allow selection during game
+            if (state.gameInProgress) return;
+            
+            const index = state.selectedNumbers.indexOf(number);
+            
+            if (index === -1) {
+                // Add number if not exceeding max selections
+                if (state.selectedNumbers.length < state.maxSelections) {
+                    state.selectedNumbers.push(number);
+                    updateNumberSelectionUI();
+                } else {
+                    showNotification('Selection Limit', `You can only select up to ${state.maxSelections} numbers in ${state.difficulty} difficulty.`);
+                }
+            } else {
+                // Remove number
+                state.selectedNumbers.splice(index, 1);
+                updateNumberSelectionUI();
+            }
+            
+            // Update play button state
+            updatePlayButtonState();
+        }
+        
+        // Update number selection UI
+        function updateNumberSelectionUI() {
+            // Update game board
+            document.querySelectorAll('.number-card').forEach(card => {
+                const number = parseInt(card.dataset.number);
+                if (state.selectedNumbers.includes(number)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+            
+            // Update chips display
+            if (elements.selectedChips) {
+                elements.selectedChips.innerHTML = '';
+                
+                state.selectedNumbers.forEach(num => {
+                    const chip = document.createElement('div');
+                    chip.className = 'number-chip';
+                    chip.textContent = num;
+                    
+                    // Add click handler to remove the number
+                    chip.addEventListener('click', () => {
+                        toggleNumberSelection(num);
+                    });
+                    
+                    elements.selectedChips.appendChild(chip);
+                });
+            }
+        }
+        
+        // Set difficulty
+        function setDifficulty(difficulty) {
+            if (!config.difficultySettings[difficulty]) return;
+            
+            // Update state
+            state.difficulty = difficulty;
+            state.maxSelections = config.difficultySettings[difficulty].maxSelections;
+            state.multiplier = config.difficultySettings[difficulty].multiplier;
+            
+            // Update UI
+            elements.easyBtn.classList.toggle('active', difficulty === 'easy');
+            elements.mediumBtn.classList.toggle('active', difficulty === 'medium');
+            elements.hardBtn.classList.toggle('active', difficulty === 'hard');
+            
+            // Ensure selected numbers don't exceed new max
+            if (state.selectedNumbers.length > state.maxSelections) {
+                state.selectedNumbers = state.selectedNumbers.slice(0, state.maxSelections);
+                updateNumberSelectionUI();
+                showNotification('Difficulty Changed', `Selected numbers trimmed to match ${difficulty} difficulty limit of ${state.maxSelections}.`);
+            }
+            
+            // Update multiplier
+            updateMultiplier();
+        }
+        
+        // Clear selection
+        function clearSelection() {
+            state.selectedNumbers = [];
+            updateNumberSelectionUI();
+            updatePlayButtonState();
+        }
+        
+        // Select random numbers
+        function selectRandom() {
+            // Clear current selection
+            state.selectedNumbers = [];
+            
+            // Generate random numbers
+            const availableNumbers = Array.from({length: 80}, (_, i) => i + 1);
+            
+            for (let i = 0; i < state.maxSelections; i++) {
+                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                state.selectedNumbers.push(availableNumbers[randomIndex]);
+                availableNumbers.splice(randomIndex, 1);
+            }
+            
+            // Sort numbers
+            state.selectedNumbers.sort((a, b) => a - b);
+            
+            // Update UI
+            updateNumberSelectionUI();
+            updatePlayButtonState();
+        }
+        
+        // Update multiplier based on wager amount
+        function updateMultiplier() {
+            if (!elements.wagerAmount || !elements.multiplierValue) return;
+            
+            // Get wager amount
+            state.wagerAmount = parseFloat(elements.wagerAmount.value) || 0;
+            
+            // Update multiplier display
+            elements.multiplierValue.textContent = state.multiplier + 'x';
+        }
+        
+        // Update play button state
+        function updatePlayButtonState() {
+            if (!elements.playBtn) return;
+            
+            const canPlay = state.connected && 
+                           state.selectedNumbers.length > 0 && 
+                           state.wagerAmount >= config.minWager && 
+                           !state.gameInProgress;
+            
+            elements.playBtn.disabled = !canPlay;
+        }
+        
+        // Utility function to shorten address
+        function shortenAddress(address) {
+            if (!address) return '';
+            return address.substring(0, 6) + '...' + address.substring(address.length - 4);
+        }
 
-    <!-- Include ethers.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    
-    <!-- Include your game scripts -->
-    <script type="module" src="frontend.js"></script>
-</body>
-</html>
+        // Play game
+        async function playGame() {
+            // Check if can play
+            if (!state.connected || state.selectedNumbers.length === 0 || state.wagerAmount <= 0 || !state.contract) {
+                console.error("Cannot play game. Check wallet connection and selections.");
+                return;
+            }
+            
+            // Update UI
+            state.gameInProgress = true;
+            elements.playBtn.disabled = true;
+            elements.txStatus.textContent = "Transaction pending...";
+            elements.txStatus.style.display = "block";
+            
+            try {
+                // Convert wager to wei
+                const wagerInWei = ethers.parseEther(state.wagerAmount.toString());
+                
+                // Call contract function
+                const tx = await state.contract.playKeno(
+                    state.selectedNumbers, 
+                    config.difficultySettings[state.difficulty].value,
+                    { value: wagerInWei }
+                );
+                
+                // Update status
+                elements.txStatus.textContent = "Transaction sent! Waiting for confirmation...";
+                
+                // Wait for transaction
+                const receipt = await tx.wait();
+                
+                // Find the GamePlayed event in the logs
+                const iface = new ethers.Interface(config.contractABI);
+                let gameEvent = null;
+                
+                for (const log of receipt.logs) {
+                    try {
+                        const parsedLog = iface.parseLog({
+                            topics: log.topics,
+                            data: log.data
+                        });
+                        
+                        if (parsedLog && parsedLog.name === "GamePlayed") {
+                            gameEvent = parsedLog;
+                            break;
+                        }
+                    } catch (e) {
+                        // Not the event we're looking for
+                        continue;
+                    }
+                }
+                
+                if (gameEvent) {
+                    const args = gameEvent.args;
+                    // Get drawn numbers and payout from event
+                    state.drawnNumbers = Array.from(args[2]).map(n => Number(n));
+                    state.matchedNumbers = state.selectedNumbers.filter(num => state.drawnNumbers.includes(num));
+                    state.payout = Number(ethers.formatEther(args[5]));
+                    
+                    // Store game result
+                    state.lastGameResult = {
+                        drawnNumbers: state.drawnNumbers,
+                        matchedNumbers: state.matchedNumbers,
+                        matches: state.matchedNumbers.length,
+                        payout: state.payout,
+                        won: state.payout > 0
+                    };
+                } else {
+                    // If we couldn't find the event, get data from transaction return values
+                    console.warn("Couldn't find GamePlayed event, using return values");
+                    const receipt = await state.provider.getTransactionReceipt(tx.hash);
+                    if (receipt && receipt.status === 1) {
+                        // Get data from return value
+                        const result = await state.contract.playKeno.staticCall(
+                            state.selectedNumbers,
+                            config.difficultySettings[state.difficulty].value,
+                            { value: wagerInWei }
+                        );
+                        
+                        state.drawnNumbers = Array.from(result[0]).map(n => Number(n));
+                        const matches = Number(result[1]);
+                        state.matchedNumbers = state.selectedNumbers.filter(num => 
+                            state.drawnNumbers.includes(Number(num))
+                        );
+                        
+                        // Estimate payout based on matches and wager
+                        state.payout = state.wagerAmount * state.multiplier * (matches > 0 ? 1 : 0);
+                        
+                        // Store game result
+                        state.lastGameResult = {
+                            drawnNumbers: state.drawnNumbers,
+                            matchedNumbers: state.matchedNumbers,
+                            matches: matches,
+                            payout: state.payout,
+                            won: state.payout > 0
+                        };
+                    }
+                }
+                
+                // Update wallet balance
+                updateWalletBalance();
+                
+                // Show result
+                showGameResult();
+            } catch (error) {
+                console.error("Error playing game:", error);
+                elements.txStatus.textContent = "Transaction failed. See console for details.";
+                showNotification("Game Error", "Failed to play the game. Please try again.");
+                
+                // Reset game state
+                resetGame();
+            }
+        }
+
+        // Show game result
+        function showGameResult() {
+            if (!state.lastGameResult) return;
+            
+            // Update the game board to show drawn numbers
+            document.querySelectorAll('.number-card').forEach(card => {
+                const number = parseInt(card.dataset.number);
+                
+                // Reset previous styling
+                card.classList.remove('drawn', 'matched');
+                
+                // Add appropriate class
+                if (state.drawnNumbers.includes(number)) {
+                    card.classList.add('drawn');
+                    
+                    if (state.matchedNumbers.includes(number)) {
+                        card.classList.add('matched');
+                    }
+                }
+            });
+            
+            // Update result section values
+            if (elements.matchesValue) {
+                elements.matchesValue.textContent = state.lastGameResult.matches;
+            }
+            
+            if (elements.payoutValue) {
+                elements.payoutValue.textContent = state.lastGameResult.payout.toFixed(4);
+            }
+            
+            if (elements.multiplierValue) {
+                elements.multiplierValue.textContent = state.multiplier + 'x';
+            }
+            
+            // Show result overlay
+            showGameResultOverlay();
+            
+            // Show animation for wins
+            if (state.lastGameResult.won && elements.winningAnimation && elements.pixelMonkey) {
+                elements.winningAnimation.style.display = 'block';
+                elements.pixelMonkey.style.animation = 'dance 1s infinite';
+                
+                // Only hide animation after 3 seconds
+                setTimeout(() => {
+                    elements.winningAnimation.style.display = 'none';
+                    elements.pixelMonkey.style.animation = '';
+                }, 3000);
+            }
+            
+            // Update transaction status
+            elements.txStatus.textContent = state.lastGameResult.won ? 
+                "You won! Transaction confirmed." : 
+                "Better luck next time! Transaction confirmed.";
+            
+            // Auto-reset for next game after a slight delay
+            setTimeout(() => {
+                // Reset the game state but keep the drawn/matched visual indicators
+                state.gameInProgress = false;
+                updatePlayButtonState();
+                elements.txStatus.style.display = "none";
+            }, 2000);
+        }
+
+        // Show game result overlay
+        function showGameResultOverlay() {
+            if (!elements.gameResultOverlay || !state.lastGameResult) return;
+            
+            const overlay = elements.gameResultOverlay;
+            const resultStatus = overlay.querySelector('.result-status');
+            const matchesCount = overlay.querySelector('.matches-count');
+            const payoutAmount = overlay.querySelector('.payout-amount');
+            
+            // Update result content
+            if (resultStatus) {
+                resultStatus.textContent = state.lastGameResult.won ? 'You Won!' : 'Try Again!';
+                resultStatus.className = 'result-status ' + (state.lastGameResult.won ? 'win' : 'lose');
+            }
+            
+            if (matchesCount) matchesCount.textContent = state.lastGameResult.matches;
+            if (payoutAmount) payoutAmount.textContent = state.lastGameResult.payout.toFixed(4);
+            
+            // Position overlay over the game board
+            positionGameResultOverlay();
+            
+            // Show overlay
+            overlay.style.display = 'flex';
+            
+            // Auto-hide overlay after a delay
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 5000);
+        }
+
+        // Position the game result overlay over the game board
+        function positionGameResultOverlay() {
+            if (!elements.gameResultOverlay || !elements.gameBoard) return;
+            
+            const boardRect = elements.gameBoard.getBoundingClientRect();
+            const overlay = elements.gameResultOverlay;
+            
+            // Set the overlay to position:absolute with the same dimensions
+            overlay.style.position = 'absolute';
+            overlay.style.top = boardRect.top + window.scrollY + 'px';
+            overlay.style.left = boardRect.left + window.scrollX + 'px';
+            overlay.style.width = boardRect.width + 'px';
+            overlay.style.height = boardRect.height + 'px';
+        }
+
+        // Reset game state for a new game
+        function resetGame() {
+            // Keep selected numbers, just reset game state
+            state.gameInProgress = false;
+            state.drawnNumbers = [];
+            state.matchedNumbers = [];
+            state.payout = 0;
+            
+            // Remove drawn/matched classes from the board
+            document.querySelectorAll('.number-card').forEach(card => {
+                card.classList.remove('drawn', 'matched');
+            });
+            
+            // Hide result overlay if it's showing
+            if (elements.gameResultOverlay) {
+                elements.gameResultOverlay.style.display = 'none';
+            }
+            
+            // Hide transaction status
+            if (elements.txStatus) {
+                elements.txStatus.style.display = 'none';
+            }
+            
+            // Reset winning animation
+            if (elements.winningAnimation && elements.pixelMonkey) {
+                elements.winningAnimation.style.display = 'none';
+                elements.pixelMonkey.style.animation = '';
+            }
+            
+            // Enable play button if conditions are met
+            updatePlayButtonState();
+        }
+
+        // Show notification
+        function showNotification(title, message) {
+            if (!elements.notificationModal || !elements.modalTitle || !elements.modalBody) return;
+            
+            elements.modalTitle.textContent = title;
+            elements.modalBody.textContent = message;
+            elements.notificationModal.style.display = 'block';
+        }
+
+        // Close notification
+        function closeNotification() {
+            if (!elements.notificationModal) return;
+            elements.notificationModal.style.display = 'none';
+        }
+
+        // Initialize the application
+        function initialize() {
+            // Initialize UI elements
+            initializeElements();
+            
+            // Create game board
+            createGameBoard();
+            
+            // Set default difficulty
+            setDifficulty('easy');
+            
+            // Add event listeners
+            addEventListeners();
+            
+            // Check for wallet connection
+            if (window.ethereum && window.ethereum.selectedAddress) {
+                connectWallet();
+            }
+        }
+
+        // Add event listeners
+        function addEventListeners() {
+            // Wallet connection
+            if (elements.connectWalletBtn) {
+                elements.connectWalletBtn.addEventListener('click', connectWallet);
+            }
+            
+            // Difficulty buttons
+            if (elements.easyBtn) elements.easyBtn.addEventListener('click', () => setDifficulty('easy'));
+            if (elements.mediumBtn) elements.mediumBtn.addEventListener('click', () => setDifficulty('medium'));
+            if (elements.hardBtn) elements.hardBtn.addEventListener('click', () => setDifficulty('hard'));
+            
+            // Game controls
+            if (elements.clearBtn) elements.clearBtn.addEventListener('click', clearSelection);
+            if (elements.randomBtn) elements.randomBtn.addEventListener('click', selectRandom);
+            if (elements.playBtn) elements.playBtn.addEventListener('click', playGame);
+            
+            // Wager amount input
+            if (elements.wagerAmount) {
+                elements.wagerAmount.addEventListener('input', updateMultiplier);
+                elements.wagerAmount.addEventListener('change', updatePlayButtonState);
+            }
+            
+            // Modal close buttons
+            if (elements.closeModal) {
+                elements.closeModal.addEventListener('click', closeNotification);
+            }
+            if (elements.modalConfirmBtn) {
+                elements.modalConfirmBtn.addEventListener('click', closeNotification);
+            }
+            
+            // Add window resize event to reposition overlay
+            window.addEventListener('resize', () => {
+                if (elements.gameResultOverlay && elements.gameResultOverlay.style.display !== 'none') {
+                    positionGameResultOverlay();
+                }
+            });
+            
+            // Handle network/account changes
+            if (window.ethereum) {
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
+                });
+                
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length === 0) {
+                        disconnectWallet();
+                    } else {
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+
+        // Call initialize function when document is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initialize();
+        });
