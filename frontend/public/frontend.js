@@ -347,6 +347,42 @@ function addEventListeners() {
 function addCustomStyles() {
     const styleElement = document.createElement('style');
     styleElement.textContent = `
+        /* Game Board Styles */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .number-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            background-color: #555;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .number-card:hover {
+            background-color: #777;
+            transform: scale(1.05);
+        }
+        
+        .number-card.selected {
+            background-color: #3f51b5;
+            font-weight: bold;
+        }
+        
         /* Selected Numbers Display */
         .selected-numbers-display {
             margin: 20px 0;
