@@ -173,7 +173,6 @@ function initializeElements() {
     elements.connectWalletBtn = document.getElementById('connectWalletBtn');
     elements.walletInfo = document.getElementById('walletInfo');
     elements.contractAddress = document.getElementById('contractAddress');
-    elements.contractBalance = document.getElementById('contractBalance');
     elements.wagerAmount = document.getElementById('wagerAmount');
     elements.difficultyBtns = document.querySelectorAll('.difficulty-btn');
     elements.easyBtn = document.getElementById('easyBtn');
@@ -188,12 +187,7 @@ function initializeElements() {
     elements.clearBtn = document.getElementById('clearBtn');
     elements.randomBtn = document.getElementById('randomBtn');
     elements.playBtn = document.getElementById('playBtn');
-    elements.resultsSection = document.getElementById('resultsSection');
-    elements.matchesValue = document.getElementById('matchesValue');
-    elements.payoutValue = document.getElementById('payoutValue');
-    elements.multiplierValue = document.getElementById('multiplierValue');
     elements.winningAnimation = document.getElementById('winningAnimation');
-    elements.playAgainBtn = document.getElementById('playAgainBtn');
     elements.pixelMonkey = document.getElementById('pixelMonkey');
     elements.txStatus = document.getElementById('txStatus');
     elements.networkInfo = document.getElementById('networkInfo');
@@ -203,18 +197,6 @@ function initializeElements() {
     elements.modalBody = document.getElementById('modalBody');
     elements.modalConfirmBtn = document.getElementById('modalConfirmBtn');
     elements.closeModal = document.getElementById('closeModal');
-    
-    // Fix for the game title - Update the title in the HTML to "Monke"
-    const titleElement = document.getElementById('gameTitle');
-    if (titleElement) {
-        titleElement.textContent = "Monke";
-    }
-    
-    // Remove unwanted "Download Project Files" button if it exists
-    const downloadBtn = document.getElementById('downloadProjectBtn');
-    if (downloadBtn) {
-        downloadBtn.remove();
-    }
 }
 
 // Connect wallet
@@ -328,10 +310,6 @@ function disconnectWallet() {
     // Update contract info
     if (elements.contractAddress) {
         elements.contractAddress.textContent = "Not connected";
-    }
-    
-    if (elements.contractBalance) {
-        elements.contractBalance.textContent = "N/A";
     }
     
     // Disable play button
@@ -815,71 +793,85 @@ function simulateGameResult() {
 
 // Show game results
 function showGameResults() {
-    // Highlight drawn and matched numbers
-    document.querySelectorAll('.number-card').forEach(card => {
-        const number = parseInt(card.dataset.number);
-        
-        // Remove previous classes
-        card.classList.remove('drawn', 'match');
-        
-        // Add appropriate classes
-        if (state.drawnNumbers.includes(number)) {
-            card.classList.add('drawn');
-        }
-        
-        if (state.matchedNumbers.includes(number)) {
-            card.classList.add('match');
-        }
+    // Create a sequence of visual effects
+    const revealDelay = 50; // Delay between each number reveal
+    const matchDelay = 500; // Delay before showing matches
+    const winningDelay = 1000; // Delay before showing winning animation
+    
+    // First, reveal all drawn numbers one by one
+    state.drawnNumbers.forEach((number, index) => {
+        setTimeout(() => {
+            const card = document.querySelector(`.number-card[data-number="${number}"]`);
+            if (card) {
+                card.classList.add('drawn');
+                // Play a subtle sound effect if you want
+                // playDrawSound();
+            }
+        }, index * revealDelay);
     });
     
-    // Update results section
-    if (elements.matchesValue) {
-        elements.matchesValue.textContent = state.matchedNumbers.length;
-    }
+    // After all numbers are drawn, show matches
+    setTimeout(() => {
+        state.matchedNumbers.forEach((number, index) => {
+            setTimeout(() => {
+                const card = document.querySelector(`.number-card[data-number="${number}"]`);
+                if (card) {
+                    card.classList.add('match');
+                    // Play a match sound effect if you want
+                    // playMatchSound();
+                }
+            }, index * 100); // Slightly faster reveal for matches
+        });
+    }, state.drawnNumbers.length * revealDelay + matchDelay);
     
-    if (elements.payoutValue) {
-        elements.payoutValue.textContent = state.payout.toFixed(4);
-    }
-    
-    if (elements.multiplierValue) {
-        elements.multiplierValue.textContent = `${state.multiplier}x`;
-    }
-    
-    // Show winning animation if there's a payout
-    if (elements.winningAnimation) {
-        if (state.payout > 0) {
-            elements.winningAnimation.textContent = "🎉 You Won! 🎉";
-        } else {
-            elements.winningAnimation.textContent = "Better luck next time!";
+    // Finally, show the winning animation overlay
+    setTimeout(() => {
+        if (elements.winningAnimation) {
+            elements.winningAnimation.className = 'winning-animation-overlay';
+            if (state.payout > 0) {
+                elements.winningAnimation.textContent = `🎉 You Won ${state.payout.toFixed(4)} MONAD! 🎉`;
+                elements.winningAnimation.classList.add('win');
+            } else {
+                elements.winningAnimation.textContent = "Better luck next time!";
+                elements.winningAnimation.classList.add('lose');
+            }
+            elements.winningAnimation.style.display = 'flex';
+            
+            // Hide the animation and reset game after animation
+            setTimeout(() => {
+                elements.winningAnimation.style.display = 'none';
+                resetGame();
+                // Re-enable play button
+                if (elements.playBtn) {
+                    elements.playBtn.disabled = false;
+                }
+                state.gameInProgress = false;
+            }, 2000); // Match the CSS animation duration
         }
-    }
-    
-    // Show results section
-    if (elements.resultsSection) {
-        elements.resultsSection.style.display = 'block';
-    }
-    
-    // Update contract and wallet balances
-    updateContractBalance();
-    updateWalletBalance();
+        
+        // Update balances
+        updateContractBalance();
+        updateWalletBalance();
+    }, state.drawnNumbers.length * revealDelay + matchDelay + winningDelay);
 }
 
 // Reset game for a new round
 function resetGame() {
-    // Hide results section
-    if (elements.resultsSection) {
-        elements.resultsSection.style.display = 'none';
-    }
-    
     // Reset game state
     state.gameInProgress = false;
     state.drawnNumbers = [];
     state.matchedNumbers = [];
     state.payout = 0;
     
-    // Reset number cards
+    // Reset number cards with animation
     document.querySelectorAll('.number-card').forEach(card => {
-        card.classList.remove('drawn', 'match');
+        // Add a fade-out class
+        card.classList.add('fade-out');
+        
+        // Remove all game-related classes after fade
+        setTimeout(() => {
+            card.classList.remove('drawn', 'match', 'fade-out');
+        }, 300);
     });
     
     // Enable play button if conditions are met
@@ -1008,10 +1000,6 @@ function setupEventListeners() {
     
     if (elements.playBtn) {
         elements.playBtn.addEventListener('click', playGame);
-    }
-    
-    if (elements.playAgainBtn) {
-        elements.playAgainBtn.addEventListener('click', resetGame);
     }
     
     // Easter egg
