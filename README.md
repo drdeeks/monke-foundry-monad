@@ -1,84 +1,164 @@
-# MonKe Keno Game
+# MonKe Keno Game 🎮
 
-A blockchain-based Keno game built on the Monad network using Foundry for smart contract development.
+A decentralized Keno game built on the Monad blockchain, featuring an interactive UI and smart contract integration.
 
-## Prerequisites
+## 🎯 Overview
 
-- [Foundry](https://getfoundry.sh/) installed
-- [Node.js](https://nodejs.org/) for the frontend
-- A Monad RPC endpoint
+MonKe Keno is a blockchain-based lottery game where players select numbers and bet on matching them with randomly drawn numbers. The game features multiple difficulty levels, dynamic multipliers, and instant payouts through smart contracts.
 
-## Setup
+## 🚀 Features
 
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/monke-keno-foundry.git
-cd monke-keno-foundry
-```
+- **Multiple Difficulty Levels**:
+  - Easy: Select up to 10 numbers, 20 numbers drawn
+  - Medium: Select up to 8 numbers, 15 numbers drawn
+  - Hard: Select up to 6 numbers, 10 numbers drawn
 
-2. Install dependencies
-```bash
-# Install Foundry dependencies
-make install
+- **Dynamic Multipliers**:
+  - Easy Mode: 1x-5x multiplier
+  - Medium Mode: 2x-10x multiplier
+  - Hard Mode: 3x-25x multiplier
 
-# Install Node.js dependencies (if using a package manager for frontend)
-cd public
-npm install
-cd ..
-```
+- **Interactive UI**:
+  - Animated number selection
+  - Real-time drawn number reveals
+  - Dynamic winning animations
+  - Responsive design for all devices
 
-3. Setup environment variables
-```bash
-cp .env.example .env
-# Edit .env with your values
-```
+- **Blockchain Integration**:
+  - Seamless wallet connection
+  - Automatic smart contract interaction
+  - Real-time balance updates
+  - Secure transaction handling
 
-## Development
+## 🛠 Installation
 
-Build the contracts:
-```bash
-forge build
-```
+### Prerequisites
+- Node.js (v14 or higher)
+- Web3 wallet (MetaMask recommended)
+- Access to Monad testnet
 
-Run tests:
-```bash
-forge test
-```
+### Setup Steps
 
-## Deployment
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/yourusername/monke-foundry-monad.git
+   cd monke-foundry-monad
+   ```
 
-Deploy to Monad:
-```bash
-make deploy-monad
-```
+2. **Install Dependencies**
+   ```bash
+   # For the frontend
+   cd frontend
+   npm install
 
-After deployment, save the contract address to an environment variable:
-```bash
-export CONTRACT_ADDRESS=<your_contract_address>
-# Replace <your_contract_address> with the actual address of your deployed contract
-```
+   # For the smart contract (if modifying)
+   cd ../contracts
+   npm install
+   ```
 
-Then save deployment info for the frontend:
-```bash
-forge script script/Save_Deployment_Info.s.sol --rpc-url https://testnet-rpc.monad.xyz MONAD_RPC_URL
-```
+3. **Configure Environment**
+   ```bash
+   # Create .env file in the root directory
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-## Frontend
+4. **Start Development Server**
+   ```bash
+   # In the frontend directory
+   npm run dev
+   ```
 
-The frontend files are located in the `public` directory. You can serve them with any static file server.
+## 🎮 How to Play
 
-```bash
-# Example using Node.js http-server
-npx http-server ./public
-```
+1. **Connect Wallet**
+   - Click "Connect Wallet" button
+   - Ensure you're on Monad testnet
+   - Approve wallet connection
 
-## Contract Verification
+2. **Choose Difficulty**
+   - Select Easy, Medium, or Hard mode
+   - Each mode has different number limits and multipliers
 
-Verify your contract on the Monad block explorer:
-```bash
-make verify
-```
+3. **Select Numbers**
+   - Click numbers on the game board
+   - Use "Random" for quick picks
+   - Use "Clear" to reset selection
 
-## License
+4. **Place Bet**
+   - Enter wager amount
+   - Check multiplier potential
+   - Click "Play" to start game
 
-MIT
+5. **Watch Results**
+   - Numbers are drawn one by one
+   - Matching numbers are highlighted
+   - Winnings are calculated and displayed
+   - Automatic payout to wallet
+
+## 💰 Payout Structure
+
+### Easy Mode (20 numbers drawn)
+- 1-3 matches: 1x multiplier
+- 4-5 matches: 2x multiplier
+- 6-8 matches: 3x multiplier
+- 9-10 matches: 5x multiplier
+
+### Medium Mode (15 numbers drawn)
+- 1-3 matches: 2x multiplier
+- 4-5 matches: 4x multiplier
+- 6-7 matches: 6x multiplier
+- 8 matches: 10x multiplier
+
+### Hard Mode (10 numbers drawn)
+- 1-2 matches: 3x multiplier
+- 3-4 matches: 7x multiplier
+- 5 matches: 15x multiplier
+- 6 matches: 25x multiplier
+
+## 🔧 Technical Details
+
+### Smart Contract
+- Built with Solidity
+- Implements provably fair random number generation
+- Includes automated payout system
+- Features owner controls and emergency functions
+
+### Frontend
+- Built with vanilla JavaScript
+- Uses ethers.js for blockchain interaction
+- Implements responsive design
+- Features modern CSS animations
+
+### Security Features
+- Input validation
+- Transaction confirmation
+- Error handling
+- Secure wallet integration
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Monad blockchain team
+- Foundry framework
+- ethers.js team
+- Community contributors
+
+## 📞 Support
+
+For support, please open an issue in the repository or contact the team at [your-email@example.com].
+
+## ⚠️ Disclaimer
+
+This is a testnet implementation. Always verify smart contract addresses and test with small amounts first on mainnet.
