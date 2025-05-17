@@ -259,24 +259,34 @@
 
     <main class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Contract Info Panel -->
+            <!-- Info Panel -->
             <div class="info-panel p-4 col-span-1">
-                <h2 class="text-xl font-bold mb-4">Contract Info</h2>
-                <div class="mb-2">
-                    <span class="text-gray-400">Address:</span>
-                    <span id="contractAddress" class="ml-2 text-sm font-mono">Not connected</span>
+                <h2 class="text-xl font-bold mb-4">Game Info</h2>
+                <!-- Wallet Info (moved from header) -->
+                <div class="mb-4">
+                    <div id="walletInfo">
+                        <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+                        <div id="networkInfo" style="display: none;">
+                            <span class="network-indicator" id="networkIndicator">Network</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-2">
-                    <span class="text-gray-400">Balance:</span>
-                    <span id="contractBalance" class="ml-2">N/A</span> MONAD
+                    <span class="text-gray-400">Contract:</span>
+                    <span id="contractAddress" class="ml-2 text-sm font-mono">Not connected</span>
+                </div>
+                <div class="mb-4">
+                    <button id="downloadProjectBtn" class="secondary-btn px-4 py-2 rounded-lg text-sm">
+                        Download Project Files
+                    </button>
                 </div>
                 <hr class="my-4 border-gray-700">
                 <div class="mb-4">
                     <h3 class="text-lg font-bold mb-2">Choose Difficulty</h3>
                     <div class="flex space-x-2">
-                        <button id="easyBtn" class="difficulty-btn px-3 py-1 rounded-md active">Easy</button>
-                        <button id="mediumBtn" class="difficulty-btn px-3 py-1 rounded-md">Medium</button>
-                        <button id="hardBtn" class="difficulty-btn px-3 py-1 rounded-md">Hard</button>
+                        <button id="easyBtn" data-level="easy" class="difficulty-btn px-3 py-1 rounded-md active">Easy</button>
+                        <button id="mediumBtn" data-level="medium" class="difficulty-btn px-3 py-1 rounded-md">Medium</button>
+                        <button id="hardBtn" data-level="hard" class="difficulty-btn px-3 py-1 rounded-md">Hard</button>
                     </div>
                 </div>
                 <div class="mb-4">
@@ -300,11 +310,6 @@
                     <h3 class="text-lg font-bold mb-2">Multiplier</h3>
                     <div id="multiplierDisplay" class="text-primary-color">Select numbers to see multiplier</div>
                 </div>
-                <div class="flex justify-end mt-4">
-                    <button id="downloadFilesBtn" class="secondary-btn px-4 py-2 rounded-lg text-sm">
-                        Download Project Files
-                    </button>
-                </div>
             </div>
 
             <!-- Game Board -->
@@ -326,28 +331,8 @@
                 
                 <div id="txStatus" class="tx-status" style="display: none;"></div>
                 
-                <!-- Results Section -->
-                <div id="resultsSection" class="results-section p-4 mt-6" style="display: none;">
-                    <h2 class="text-xl font-bold mb-4">Game Results</h2>
-                    <div id="winningAnimation" class="winning-animation text-center py-4"></div>
-                    <div class="grid grid-cols-3 gap-4 mb-6">
-                        <div class="text-center">
-                            <div class="text-gray-400">Matches</div>
-                            <div id="matchesValue" class="text-2xl font-bold">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-gray-400">Multiplier</div>
-                            <div id="multiplierValue" class="text-2xl font-bold">0x</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-gray-400">Payout</div>
-                            <div id="payoutValue" class="text-2xl font-bold text-primary-color">0</div>
-                        </div>
-                    </div>
-                    <div class="flex justify-center">
-                        <button id="playAgainBtn" class="primary-btn px-6 py-2 rounded-md">Play Again</button>
-                    </div>
-                </div>
+                <!-- Winning Animation Overlay -->
+                <div id="winningAnimation" class="winning-animation-overlay"></div>
             </div>
         </div>
     </main>
