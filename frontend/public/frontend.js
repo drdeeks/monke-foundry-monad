@@ -356,7 +356,9 @@ async function updateContractBalance() {
     try {
         const balance = await state.provider.getBalance(config.contractAddress);
         if (elements.contractBalance) {
-            elements.contractBalance.textContent = ethers.formatEther(balance);
+            // Convert BigInt balance to number for display
+            const balanceInEther = Number(ethers.formatEther(balance));
+            elements.contractBalance.textContent = balanceInEther.toFixed(4);
         }
     } catch (error) {
         console.error("Error getting contract balance:", error);
@@ -423,7 +425,9 @@ async function updateWalletBalance() {
         const balance = await state.provider.getBalance(state.account);
         const walletBalanceElement = document.getElementById('walletBalance');
         if (walletBalanceElement) {
-            walletBalanceElement.textContent = `${parseFloat(ethers.formatEther(balance)).toFixed(4)} MONAD`;
+            // Convert BigInt balance to number for display
+            const balanceInEther = Number(ethers.formatEther(balance));
+            walletBalanceElement.textContent = `${balanceInEther.toFixed(4)} MONAD`;
         }
     } catch (error) {
         console.error("Error getting wallet balance:", error);
@@ -695,7 +699,7 @@ async function updateGasPrice() {
     }
 }
 
-// Modify the playGame function to include gas estimation
+// Modify the playGame function to handle BigInt correctly
 async function playGame() {
     if (!validateGameSettings()) return;
     
@@ -722,8 +726,8 @@ async function playGame() {
             { value: wagerAmountWei }
         );
         
-        // Add 10% buffer to gas estimate
-        const gasLimit = Math.ceil(gasEstimate * 1.1);
+        // Add 10% buffer to gas estimate - handle as BigInt
+        const gasLimit = (gasEstimate * BigInt(110)) / BigInt(100);
         
         showTxStatus('pending', 'Transaction pending...');
         
@@ -734,7 +738,7 @@ async function playGame() {
             { 
                 value: wagerAmountWei,
                 gasLimit: gasLimit,
-                gasPrice: gasPrice
+                ...(gasPrice ? { gasPrice: gasPrice } : {})
             }
         );
         
@@ -810,13 +814,20 @@ function validateGameSettings() {
     return true;
 }
 
-// Process game result from contract event
+// Update the processGameResult function to handle BigInt values
 function processGameResult(eventArgs) {
-    // Extract data from event
-    // This will depend on your contract event structure
-    state.drawnNumbers = eventArgs.drawnNumbers || [];
-    state.matchedNumbers = eventArgs.matchedNumbers || [];
-    state.payout = eventArgs.payout ? parseFloat(ethers.formatEther(eventArgs.payout)) : 0;
+    state.drawnNumbers = eventArgs.drawnNumbers ? eventArgs.drawnNumbers.map(n => Number(n)) : [];
+    state.matchedNumbers = state.selectedNumbers.filter(num => 
+        state.drawnNumbers.includes(Number(num))
+    );
+    
+    // Convert BigInt payout to number for display
+    if (eventArgs.payout) {
+        const payoutBigInt = BigInt(eventArgs.payout.toString());
+        state.payout = Number(ethers.formatEther(payoutBigInt));
+    } else {
+        state.payout = 0;
+    }
     
     // Show results
     showGameResults();
