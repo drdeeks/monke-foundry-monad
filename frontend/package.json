@@ -3,10 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "dev": "http-server public -p 3000 -c-1",
     "build": "echo \"No build step required\"",
-    "start": "serve ."
+    "start": "http-server public -p 3000"
   },
   "dependencies": {
-    "serve": "^14.2.0"
+    "ethers": "^6.7.0",
+    "http-server": "^14.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0"
   }
 }
