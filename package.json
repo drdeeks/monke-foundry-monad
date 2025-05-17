@@ -1,0 +1,20 @@
+{
+  "name": "monke-keno",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "start": "cd frontend && npm run start",
+    "build": "cd frontend && npm run build",
+    "test": "forge test",
+    "deploy": "forge script script/DeployMonKeKeno.s.sol:DeployMonKeKeno --rpc-url ${MONAD_RPC_URL} --private-key ${PRIVATE_KEY} --broadcast",
+    "verify": "forge verify-contract ${CONTRACT_ADDRESS} src/MonKeKeno.sol:MonKeKeno --chain-id ${MONAD_CHAIN_ID} --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.9.0"
+  }
+} 
