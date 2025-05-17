@@ -288,10 +288,6 @@ function disconnectWallet() {
     state.contract = null;
     
     // Update UI
-    if (elements.connectWalletBtn) {
-        elements.connectWalletBtn.textContent = "Connect Wallet";
-    }
-    
     if (elements.walletInfo) {
         elements.walletInfo.innerHTML = `
             <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
@@ -368,6 +364,21 @@ function updateWalletUI() {
     if (!state.connected || !state.account || !elements.walletInfo) {
         if (elements.connectWalletBtn) {
             elements.connectWalletBtn.textContent = "Connect Wallet";
+            elements.connectWalletBtn.style.display = "block";
+        }
+        if (elements.walletInfo) {
+            elements.walletInfo.innerHTML = `
+                <button class="connect-wallet-btn" id="connectWalletBtn">Connect Wallet</button>
+                <div id="networkInfo" style="display: none;">
+                    <span class="network-indicator" id="networkIndicator">Network</span>
+                </div>
+            `;
+            
+            // Re-add event listener
+            const newConnectBtn = document.getElementById('connectWalletBtn');
+            if (newConnectBtn) {
+                newConnectBtn.addEventListener('click', connectWallet);
+            }
         }
         return;
     }
@@ -383,6 +394,11 @@ function updateWalletUI() {
             <span class="network-indicator" id="networkIndicator">Network</span>
         </div>
     `;
+    
+    // Hide the connect wallet button if it exists
+    if (elements.connectWalletBtn) {
+        elements.connectWalletBtn.style.display = "none";
+    }
     
     // Get and display wallet balance
     updateWalletBalance();
