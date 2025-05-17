@@ -132,12 +132,14 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
-            background-color: #eee;
+            background-color: var(--darker-bg);
+            color: var(--light);
         }
         
         .difficulty-btn.active {
-            background-color: var(--secondary);
+            background-color: var(--primary-color);
             color: var(--light);
+            transform: scale(1.05);
         }
         
         .game-board {
@@ -156,39 +158,71 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f5f5f5;
-            border-radius: 5px;
+            background-color: var(--darker-bg);
+            border: 2px solid transparent;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             font-size: 1.2rem;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
+            position: relative;
+            overflow: hidden;
         }
         
         .number-card:hover {
-            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
         .number-card.selected {
-            background-color: var(--secondary);
-            color: var(--light);
+            background-color: var(--primary-color);
+            color: var(--darker-bg);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(249, 168, 38, 0.4);
+            animation: selectPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         .number-card.drawn {
-            background-color: var(--success);
-            color: var(--light);
+            border: 2px solid var(--secondary-color);
+            animation: drawReveal 0.5s ease forwards;
         }
         
         .number-card.match {
-            background-color: var(--accent);
-            color: var(--dark);
-            animation: pulse 1s infinite;
+            background-color: var(--secondary-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.6);
+            animation: matchPulse 1s infinite;
         }
         
-        @keyframes pulse {
+        .number-card.fade-out {
+            transition: all 0.3s ease-out;
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        @keyframes selectPop {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        @keyframes drawReveal {
+            0% { 
+                transform: rotateY(0deg);
+                background-color: var(--darker-bg);
+            }
+            100% { 
+                transform: rotateY(180deg);
+                background-color: var(--dark-bg);
+            }
+        }
+        
+        @keyframes matchPulse {
+            0% { transform: scale(1.1); box-shadow: 0 0 20px rgba(79, 70, 229, 0.6); }
+            50% { transform: scale(1.15); box-shadow: 0 0 30px rgba(79, 70, 229, 0.8); }
+            100% { transform: scale(1.1); box-shadow: 0 0 20px rgba(79, 70, 229, 0.6); }
         }
         
         .action-buttons {
@@ -322,6 +356,43 @@
             padding: 5px 10px;
             border-radius: 5px;
             margin-top: 5px;
+        }
+        
+        .winning-animation-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 2rem 4rem;
+            border-radius: 1rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInOut 2s ease-in-out;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+        }
+        
+        .winning-animation-overlay.win {
+            background-color: rgba(40, 167, 69, 0.9);
+            box-shadow: 0 0 50px rgba(40, 167, 69, 0.3);
+        }
+        
+        .winning-animation-overlay.lose {
+            background-color: rgba(220, 53, 69, 0.9);
+            box-shadow: 0 0 50px rgba(220, 53, 69, 0.3);
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); filter: blur(10px); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); filter: blur(0); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); filter: blur(0); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); filter: blur(10px); }
         }
         
         /* Responsive adjustments */
