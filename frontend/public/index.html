@@ -152,14 +152,26 @@
         }
         
         .number-card.drawn {
-            border: 2px solid var(--secondary-color);
-            animation: pulse-border 2s infinite;
+            border: 3px solid var(--secondary-color);
+            animation: pulse-drawn 2s infinite;
+            background-color: rgba(79, 70, 229, 0.2);
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.3);
+            transform: scale(1.05);
         }
         
-        @keyframes pulse-border {
-            0% { border-color: var(--secondary-color); }
-            50% { border-color: rgba(79, 70, 229, 0.4); }
-            100% { border-color: var(--secondary-color); }
+        @keyframes pulse-drawn {
+            0% { 
+                border-color: var(--secondary-color);
+                box-shadow: 0 0 12px rgba(79, 70, 229, 0.3);
+            }
+            50% { 
+                border-color: rgba(79, 70, 229, 0.8);
+                box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+            }
+            100% { 
+                border-color: var(--secondary-color);
+                box-shadow: 0 0 12px rgba(79, 70, 229, 0.3);
+            }
         }
         
         .number-card.match {
