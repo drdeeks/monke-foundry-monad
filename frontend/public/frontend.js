@@ -165,6 +165,13 @@ const state = {
     multiplier: 0
 };
 
+// Add this after the state object
+const GAS_SETTINGS = {
+    lastGasPrice: null,
+    lastUpdateTime: null,
+    updateInterval: 30000 // Update every 30 seconds
+};
+
 // DOM Elements
 const elements = {};
 
@@ -665,7 +672,30 @@ function updatePlayButtonState() {
     elements.playBtn.disabled = !canPlay;
 }
 
-// Play the game
+// Add this function to get current gas price
+async function updateGasPrice() {
+    if (!state.provider) return;
+    
+    try {
+        // Only update if enough time has passed since last update
+        const now = Date.now();
+        if (GAS_SETTINGS.lastUpdateTime && 
+            now - GAS_SETTINGS.lastUpdateTime < GAS_SETTINGS.updateInterval) {
+            return GAS_SETTINGS.lastGasPrice;
+        }
+        
+        const feeData = await state.provider.getFeeData();
+        GAS_SETTINGS.lastGasPrice = feeData.gasPrice;
+        GAS_SETTINGS.lastUpdateTime = now;
+        
+        return feeData.gasPrice;
+    } catch (error) {
+        console.error("Error getting gas price:", error);
+        return null;
+    }
+}
+
+// Modify the playGame function to include gas estimation
 async function playGame() {
     if (!validateGameSettings()) return;
     
@@ -676,17 +706,36 @@ async function playGame() {
     }
     
     // Update UI to show transaction in progress
-    showTxStatus('pending', 'Transaction pending...');
+    showTxStatus('pending', 'Estimating gas...');
     
     try {
-        // Prepare wager amount in wei (convert from MONAD to wei)
+        // Get current gas price
+        const gasPrice = await updateGasPrice();
+        
+        // Prepare wager amount in wei
         const wagerAmountWei = ethers.parseEther(state.wagerAmount.toString());
         
-        // Call the contract to play the game
-        const tx = await state.contract.playKeno(
+        // Estimate gas for the transaction
+        const gasEstimate = await state.contract.playKeno.estimateGas(
             state.selectedNumbers,
             state.difficulty,
             { value: wagerAmountWei }
+        );
+        
+        // Add 10% buffer to gas estimate
+        const gasLimit = Math.ceil(gasEstimate * 1.1);
+        
+        showTxStatus('pending', 'Transaction pending...');
+        
+        // Call the contract with optimized gas settings
+        const tx = await state.contract.playKeno(
+            state.selectedNumbers,
+            state.difficulty,
+            { 
+                value: wagerAmountWei,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice
+            }
         );
         
         showTxStatus('pending', 'Transaction sent! Waiting for confirmation...');
@@ -700,7 +749,6 @@ async function playGame() {
         const gamePlayedEvent = receipt.logs
             .find(log => {
                 try {
-                    // For ethers v6, we need to decode the log differently
                     const decoded = state.contract.interface.parseLog({
                         topics: log.topics,
                         data: log.data
@@ -712,16 +760,12 @@ async function playGame() {
             });
             
         if (gamePlayedEvent) {
-            // Parse the event data
             const event = state.contract.interface.parseLog({
                 topics: gamePlayedEvent.topics,
                 data: gamePlayedEvent.data
             });
-            
-            // Process the result
             processGameResult(event.args);
         } else {
-            // Fallback to simulation if we can't find the event
             console.warn("Could not find GamePlayed event, using simulation instead");
             simulateGameResult();
         }
@@ -731,13 +775,11 @@ async function playGame() {
         console.error("Error playing game:", error);
         showTxStatus('error', 'Transaction failed: ' + (error.message || "Unknown error"));
         
-        // Reset game state
         state.gameInProgress = false;
         if (elements.playBtn) {
             elements.playBtn.disabled = false;
         }
         
-        // Show notification
         showNotification(
             "Game Error", 
             "Failed to play the game: " + (error.message || "Please try again later.")
@@ -807,21 +849,20 @@ function simulateGameResult() {
     showGameResults();
 }
 
-// Show game results
+// Modify the showGameResults function to slow down the drawn numbers animation
 function showGameResults() {
     // Create a sequence of visual effects
-    const revealDelay = 50; // Delay between each number reveal
-    const matchDelay = 500; // Delay before showing matches
-    const winningDelay = 1000; // Delay before showing winning animation
+    const revealDelay = 300; // Increased from 50 to 300ms per number
+    const matchDelay = 1000; // Increased from 500 to 1000ms
+    const winningDelay = 1500; // Increased from 1000 to 1500ms
     
-    // First, reveal all drawn numbers one by one
+    // First, reveal all drawn numbers one by one with a slower animation
     state.drawnNumbers.forEach((number, index) => {
         setTimeout(() => {
             const card = document.querySelector(`.number-card[data-number="${number}"]`);
             if (card) {
                 card.classList.add('drawn');
-                // Play a subtle sound effect if you want
-                // playDrawSound();
+                // Optional: Add sound effect here
             }
         }, index * revealDelay);
     });
@@ -833,10 +874,9 @@ function showGameResults() {
                 const card = document.querySelector(`.number-card[data-number="${number}"]`);
                 if (card) {
                     card.classList.add('match');
-                    // Play a match sound effect if you want
-                    // playMatchSound();
+                    // Optional: Add match sound effect here
                 }
-            }, index * 100); // Slightly faster reveal for matches
+            }, index * 200); // Slightly faster reveal for matches
         });
     }, state.drawnNumbers.length * revealDelay + matchDelay);
     
@@ -857,12 +897,11 @@ function showGameResults() {
             setTimeout(() => {
                 elements.winningAnimation.style.display = 'none';
                 resetGame();
-                // Re-enable play button
                 if (elements.playBtn) {
                     elements.playBtn.disabled = false;
                 }
                 state.gameInProgress = false;
-            }, 2000); // Match the CSS animation duration
+            }, 2000);
         }
         
         // Update balances
